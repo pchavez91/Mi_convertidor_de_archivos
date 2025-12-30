@@ -20,7 +20,8 @@ function FormatSelector({ fileType, value, onChange }) {
       { value: 'webp', label: 'WEBP', desc: 'Optimizado para web' },
       { value: 'gif', label: 'GIF', desc: 'Animaciones' },
       { value: 'bmp', label: 'BMP', desc: 'Sin compresión' },
-      { value: 'svg', label: 'SVG', desc: 'Vectorial' },
+      { value: 'ico', label: 'ICO', desc: 'Iconos de Windows' },
+      { value: 'tiff', label: 'TIFF', desc: 'Alta calidad' },
     ],
     document: [
       { value: 'txt', label: 'TXT', desc: 'Texto plano' },

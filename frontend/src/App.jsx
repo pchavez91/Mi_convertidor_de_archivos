@@ -48,7 +48,7 @@ function App() {
     const ext = selectedFile.name.split('.').pop().toLowerCase()
     const audioFormats = ['mp3', 'wav', 'aac', 'ogg', 'flac', 'm4a', 'wma']
     const videoFormats = ['mp4', 'avi', 'mov', 'mkv', 'webm', 'flv', 'wmv', 'm4v']
-    const imageFormats = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'svg', 'ico', 'tiff']
+    const imageFormats = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'ico', 'tiff']
     const documentFormats = ['pdf', 'docx', 'txt', 'html', 'md', 'rtf', 'odt']
     
     if (audioFormats.includes(ext)) {
@@ -236,7 +236,7 @@ function App() {
               </div>
               <div className="p-4 bg-pink-50 rounded-lg">
                 <h3 className="font-semibold text-pink-800 mb-2">🖼️ Imágenes</h3>
-                <p className="text-sm text-gray-600">JPG, PNG, WEBP, GIF, SVG</p>
+                <p className="text-sm text-gray-600">JPG, PNG, WEBP, GIF, BMP, ICO, TIFF</p>
               </div>
               <div className="p-4 bg-green-50 rounded-lg">
                 <h3 className="font-semibold text-green-800 mb-2">📄 Documentos</h3>

@@ -64,7 +64,7 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 # Formatos soportados
 AUDIO_FORMATS = ["mp3", "wav", "aac", "ogg", "flac", "m4a", "wma"]
 VIDEO_FORMATS = ["mp4", "avi", "mov", "mkv", "webm", "flv", "wmv", "m4v"]
-IMAGE_FORMATS = ["jpg", "jpeg", "png", "webp", "gif", "bmp", "svg", "ico", "tiff"]
+IMAGE_FORMATS = ["jpg", "jpeg", "png", "webp", "gif", "bmp", "ico", "tiff"]
 DOCUMENT_FORMATS = ["pdf", "docx", "txt", "html", "md", "rtf", "odt"]
 
 def get_file_type(filename: str) -> str:
@@ -226,16 +226,111 @@ async def convert_image(input_path: Path, output_path: Path, output_format: str)
     """Convierte imágenes usando Pillow"""
     from PIL import Image
     
-    img = Image.open(input_path)
+    # SVG no se puede convertir desde imágenes raster
+    if output_format == "svg":
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede convertir imágenes raster (JPG, PNG, etc.) a SVG. SVG es un formato vectorial. Para crear SVG, necesitas usar herramientas de diseño vectorial."
+        )
     
-    # Convertir RGBA a RGB si es necesario (para formatos que no soportan transparencia)
-    if output_format in ["jpg", "jpeg"] and img.mode == "RGBA":
-        rgb_img = Image.new("RGB", img.size, (255, 255, 255))
-        rgb_img.paste(img, mask=img.split()[3])
-        img = rgb_img
-    
-    # Guardar en el nuevo formato
-    img.save(output_path, format=output_format.upper() if output_format.upper() != "JPG" else "JPEG")
+    try:
+        img = Image.open(input_path)
+        
+        # Manejar GIFs animados - tomar solo el primer frame
+        if img.format == "GIF":
+            try:
+                # Verificar si es animado
+                if hasattr(img, 'is_animated') and img.is_animated:
+                    # Ir al primer frame y copiarlo
+                    img.seek(0)
+                    # Crear una copia del primer frame
+                    first_frame = img.copy()
+                    img = first_frame
+            except Exception as e:
+                logger.warning(f"Error manejando GIF animado, usando frame actual: {str(e)}")
+                # Si hay error, simplemente usar la imagen tal como está
+                pass
+        
+        # Convertir modos de color problemáticos a RGB/RGBA según necesidad
+        # Esto debe hacerse antes de las conversiones específicas de formato
+        
+        # Convertir modos de color problemáticos
+        if img.mode in ["P", "LA", "PA"]:
+            # P = Palette, LA = Luminance + Alpha, PA = Palette + Alpha
+            if img.mode == "P":
+                # Verificar si tiene transparencia
+                if "transparency" in img.info:
+                    img = img.convert("RGBA")
+                else:
+                    img = img.convert("RGB")
+            elif img.mode in ["LA", "PA"]:
+                img = img.convert("RGBA")
+        
+        # Convertir RGBA a RGB si es necesario (para formatos que no soportan transparencia)
+        if output_format in ["jpg", "jpeg"]:
+            # JPG no soporta transparencia, siempre convertir a RGB
+            if img.mode == "RGBA":
+                # Crear fondo blanco y pegar la imagen con transparencia
+                rgb_img = Image.new("RGB", img.size, (255, 255, 255))
+                if img.mode == "RGBA":
+                    # Usar el canal alpha como máscara
+                    alpha = img.split()[3] if len(img.split()) > 3 else None
+                    rgb_img.paste(img, mask=alpha)
+                else:
+                    rgb_img.paste(img)
+                img = rgb_img
+            elif img.mode not in ["RGB", "L"]:
+                # Convertir otros modos a RGB
+                img = img.convert("RGB")
+        elif output_format in ["bmp", "webp"]:
+            # BMP y WEBP pueden manejar RGBA, pero mejor convertir a RGB si no hay transparencia
+            if img.mode == "RGBA" and output_format == "bmp":
+                # BMP no soporta transparencia bien, convertir a RGB
+                rgb_img = Image.new("RGB", img.size, (255, 255, 255))
+                rgb_img.paste(img, mask=img.split()[3] if len(img.split()) > 3 else None)
+                img = rgb_img
+        elif output_format == "png":
+            # PNG soporta transparencia, mantener RGBA si existe
+            if img.mode not in ["RGB", "RGBA", "L", "LA", "P"]:
+                img = img.convert("RGBA")
+        elif output_format == "gif":
+            # GIF puede tener transparencia
+            if img.mode not in ["RGB", "RGBA", "P", "L"]:
+                img = img.convert("RGB")
+        
+        # Determinar el formato para Pillow
+        format_map = {
+            "jpg": "JPEG",
+            "jpeg": "JPEG",
+            "png": "PNG",
+            "gif": "GIF",
+            "bmp": "BMP",
+            "webp": "WEBP",
+            "tiff": "TIFF",
+            "ico": "ICO"
+        }
+        
+        pillow_format = format_map.get(output_format.lower(), output_format.upper())
+        
+        # Opciones de guardado según el formato
+        save_kwargs = {}
+        if pillow_format == "JPEG":
+            save_kwargs["quality"] = 95
+            save_kwargs["optimize"] = True
+        elif pillow_format == "WEBP":
+            save_kwargs["quality"] = 90
+        elif pillow_format == "PNG":
+            save_kwargs["optimize"] = True
+        
+        # Guardar en el nuevo formato
+        img.save(output_path, format=pillow_format, **save_kwargs)
+        
+    except Exception as e:
+        logger.error(f"Error convirtiendo imagen: {str(e)}\n{traceback.format_exc()}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al convertir imagen: {str(e)}"
+        )
 
 def extract_text_from_pdf(pdf_path: Path) -> str:
     """Extrae texto de un archivo PDF"""
