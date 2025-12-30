@@ -46,6 +46,11 @@ python3 -m pip install --upgrade pip
 pip3 install -r requirements.txt
 ```
 
+**Nota:** Si tienes problemas instalando `reportlab`, puedes instalarlo manualmente:
+```bash
+py -m pip install reportlab
+```
+
 ### Frontend
 
 ```bash

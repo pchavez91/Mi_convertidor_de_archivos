@@ -237,6 +237,49 @@ async def convert_image(input_path: Path, output_path: Path, output_format: str)
     # Guardar en el nuevo formato
     img.save(output_path, format=output_format.upper() if output_format.upper() != "JPG" else "JPEG")
 
+def extract_text_from_pdf(pdf_path: Path) -> str:
+    """Extrae texto de un archivo PDF"""
+    try:
+        import PyPDF2
+        text_content = []
+        
+        with open(pdf_path, 'rb') as file:
+            pdf_reader = PyPDF2.PdfReader(file)
+            
+            if len(pdf_reader.pages) == 0:
+                raise HTTPException(
+                    status_code=400,
+                    detail="El archivo PDF está vacío o no tiene páginas"
+                )
+            
+            for page_num in range(len(pdf_reader.pages)):
+                page = pdf_reader.pages[page_num]
+                text = page.extract_text()
+                if text.strip():
+                    text_content.append(text)
+        
+        if not text_content:
+            raise HTTPException(
+                status_code=400,
+                detail="El archivo PDF no contiene texto extraíble. Puede ser un PDF escaneado (imagen) o estar protegido."
+            )
+        
+        return "\n\n".join(text_content)
+    
+    except HTTPException:
+        raise
+    except ImportError:
+        raise HTTPException(
+            status_code=500,
+            detail="PyPDF2 no está instalado. Ejecuta: pip install PyPDF2"
+        )
+    except Exception as e:
+        logger.error(f"Error extrayendo texto de PDF: {str(e)}\n{traceback.format_exc()}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al leer archivo PDF: {str(e)}"
+        )
+
 async def convert_document(input_path: Path, output_path: Path, output_format: str):
     """Convierte documentos con manejo robusto de errores"""
     input_ext = input_path.suffix.lower()
@@ -248,10 +291,18 @@ async def convert_document(input_path: Path, output_path: Path, output_format: s
         if output_format == "txt":
             # Conversión a texto plano
             if input_ext == ".pdf":
-                raise HTTPException(
-                    status_code=400, 
-                    detail="Conversión de PDF a TXT no está disponible. Por favor usa otro formato de salida."
-                )
+                try:
+                    text_content = extract_text_from_pdf(input_path)
+                    async with aiofiles.open(output_path, 'w', encoding='utf-8') as f:
+                        await f.write(text_content)
+                except HTTPException:
+                    raise
+                except Exception as e:
+                    logger.error(f"Error convirtiendo PDF a TXT: {str(e)}")
+                    raise HTTPException(
+                        status_code=500,
+                        detail=f"Error al convertir PDF a TXT: {str(e)}"
+                    )
             elif input_ext in [".docx"]:
                 try:
                     from docx import Document
@@ -316,7 +367,35 @@ async def convert_document(input_path: Path, output_path: Path, output_format: s
         
         elif output_format == "html":
             # Conversión a HTML
-            if input_ext in [".docx"]:
+            if input_ext == ".pdf":
+                try:
+                    text_content = extract_text_from_pdf(input_path)
+                    # Escapar HTML
+                    import html
+                    escaped_text = html.escape(text_content)
+                    # Convertir saltos de línea a <br>
+                    escaped_text = escaped_text.replace('\n', '<br>\n')
+                    html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Documento Convertido</title>
+</head>
+<body>
+    <pre>{escaped_text}</pre>
+</body>
+</html>"""
+                    async with aiofiles.open(output_path, 'w', encoding='utf-8') as f:
+                        await f.write(html_content)
+                except HTTPException:
+                    raise
+                except Exception as e:
+                    logger.error(f"Error convirtiendo PDF a HTML: {str(e)}")
+                    raise HTTPException(
+                        status_code=500,
+                        detail=f"Error al convertir PDF a HTML: {str(e)}"
+                    )
+            elif input_ext in [".docx"]:
                 try:
                     from docx import Document
                     doc = Document(input_path)
@@ -382,7 +461,20 @@ async def convert_document(input_path: Path, output_path: Path, output_format: s
         
         elif output_format == "md":
             # Conversión a Markdown
-            if input_ext in [".docx"]:
+            if input_ext == ".pdf":
+                try:
+                    text_content = extract_text_from_pdf(input_path)
+                    async with aiofiles.open(output_path, 'w', encoding='utf-8') as f:
+                        await f.write(text_content)
+                except HTTPException:
+                    raise
+                except Exception as e:
+                    logger.error(f"Error convirtiendo PDF a MD: {str(e)}")
+                    raise HTTPException(
+                        status_code=500,
+                        detail=f"Error al convertir PDF a Markdown: {str(e)}"
+                    )
+            elif input_ext in [".docx"]:
                 try:
                     from docx import Document
                     doc = Document(input_path)
@@ -415,10 +507,180 @@ async def convert_document(input_path: Path, output_path: Path, output_format: s
                 async with aiofiles.open(output_path, 'w', encoding='utf-8') as f:
                     await f.write(content)
         
+        elif output_format == "pdf":
+            # Conversión a PDF
+            try:
+                from reportlab.lib.pagesizes import letter, A4
+                from reportlab.pdfgen import canvas
+                from reportlab.lib.units import inch
+                
+                # Leer contenido del archivo
+                text_content = ""
+                
+                if input_ext in [".docx"]:
+                    try:
+                        from docx import Document
+                        doc = Document(input_path)
+                        text_content = "\n".join([para.text for para in doc.paragraphs])
+                    except Exception as e:
+                        logger.error(f"Error leyendo DOCX para PDF: {str(e)}")
+                        raise HTTPException(
+                            status_code=500,
+                            detail=f"Error al leer archivo DOCX: {str(e)}"
+                        )
+                elif input_ext == ".pdf":
+                    raise HTTPException(
+                        status_code=400,
+                        detail="El archivo ya es un PDF. No es necesario convertirlo."
+                    )
+                else:
+                    # Leer como texto
+                    content = None
+                    for encoding in encodings:
+                        try:
+                            async with aiofiles.open(input_path, 'r', encoding=encoding) as f:
+                                content = await f.read()
+                            break
+                        except (UnicodeDecodeError, UnicodeError):
+                            continue
+                    
+                    if content is None:
+                        raise HTTPException(
+                            status_code=500,
+                            detail="No se pudo leer el archivo con ningún encoding compatible"
+                        )
+                    text_content = content
+                
+                # Crear PDF
+                c = canvas.Canvas(str(output_path), pagesize=A4)
+                width, height = A4
+                
+                # Configuración de texto
+                y_position = height - 50
+                line_height = 14
+                margin = 50
+                max_width = width - (2 * margin)
+                
+                # Dividir texto en líneas que quepan en la página
+                lines = text_content.split('\n')
+                for line in lines:
+                    # Si la línea es muy larga, dividirla
+                    words = line.split(' ')
+                    current_line = ""
+                    
+                    for word in words:
+                        test_line = current_line + (" " if current_line else "") + word
+                        text_width = c.stringWidth(test_line, "Helvetica", 10)
+                        
+                        if text_width > max_width and current_line:
+                            # Dibujar línea actual
+                            c.drawString(margin, y_position, current_line)
+                            y_position -= line_height
+                            current_line = word
+                            
+                            # Nueva página si es necesario
+                            if y_position < margin:
+                                c.showPage()
+                                y_position = height - 50
+                        else:
+                            current_line = test_line
+                    
+                    # Dibujar última línea
+                    if current_line:
+                        c.drawString(margin, y_position, current_line)
+                        y_position -= line_height
+                    
+                    # Nueva página si es necesario
+                    if y_position < margin:
+                        c.showPage()
+                        y_position = height - 50
+                
+                c.save()
+                
+            except ImportError:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Librería reportlab no está instalada. Ejecuta: pip install reportlab"
+                )
+            except Exception as e:
+                logger.error(f"Error creando PDF: {str(e)}\n{traceback.format_exc()}")
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Error al crear PDF: {str(e)}"
+                )
+        
+        elif output_format == "docx":
+            # Conversión a DOCX
+            try:
+                from docx import Document
+                
+                # Leer contenido del archivo
+                text_content = ""
+                
+                if input_ext in [".docx"]:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="El archivo ya es un DOCX. No es necesario convertirlo."
+                    )
+                elif input_ext == ".pdf":
+                    try:
+                        text_content = extract_text_from_pdf(input_path)
+                    except HTTPException:
+                        raise
+                    except Exception as e:
+                        logger.error(f"Error leyendo PDF para DOCX: {str(e)}")
+                        raise HTTPException(
+                            status_code=500,
+                            detail=f"Error al leer archivo PDF: {str(e)}"
+                        )
+                else:
+                    # Leer como texto
+                    content = None
+                    for encoding in encodings:
+                        try:
+                            async with aiofiles.open(input_path, 'r', encoding=encoding) as f:
+                                content = await f.read()
+                            break
+                        except (UnicodeDecodeError, UnicodeError):
+                            continue
+                    
+                    if content is None:
+                        raise HTTPException(
+                            status_code=500,
+                            detail="No se pudo leer el archivo con ningún encoding compatible"
+                        )
+                    text_content = content
+                
+                # Crear documento DOCX
+                doc = Document()
+                
+                # Dividir en párrafos (por líneas vacías o saltos de línea)
+                paragraphs = text_content.split('\n\n')
+                for para_text in paragraphs:
+                    if para_text.strip():
+                        # Dividir líneas largas
+                        lines = para_text.split('\n')
+                        for line in lines:
+                            if line.strip():
+                                doc.add_paragraph(line.strip())
+                        # Agregar espacio entre párrafos
+                        if para_text != paragraphs[-1]:
+                            doc.add_paragraph()
+                
+                # Guardar documento
+                doc.save(str(output_path))
+                
+            except Exception as e:
+                logger.error(f"Error creando DOCX: {str(e)}\n{traceback.format_exc()}")
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Error al crear DOCX: {str(e)}"
+                )
+        
         else:
             raise HTTPException(
                 status_code=400, 
-                detail=f"Conversión de documentos a {output_format} no está implementada aún. Formatos disponibles: txt, html, md"
+                detail=f"Conversión de documentos a {output_format} no está implementada aún. Formatos disponibles: txt, html, md, pdf, docx"
             )
     
     except HTTPException:
