@@ -11,6 +11,7 @@ import aiofiles
 import socket
 import logging
 import traceback
+import asyncio
 
 app = FastAPI(title="Convertidor de Archivos API")
 
@@ -194,33 +195,89 @@ async def convert_file(
         raise HTTPException(status_code=500, detail=f"Error en la conversión: {str(e)}")
 
 async def convert_media(input_path: Path, output_path: Path, output_format: str):
-    """Convierte archivos de audio/video usando FFmpeg"""
+    """Convierte archivos de audio/video usando FFmpeg con optimizaciones"""
+    
+    # Construir comando base con optimizaciones
     cmd = [
         "ffmpeg",
         "-i", str(input_path),
         "-y",  # Sobrescribir archivo de salida
-        str(output_path)
     ]
+    
+    # Optimizaciones generales para velocidad
+    cmd.extend([
+        "-threads", "0",  # Usar todos los cores disponibles
+    ])
     
     # Ajustes específicos para audio
     if output_format in AUDIO_FORMATS:
         if output_format == "mp3":
-            cmd.insert(-1, "-codec:a")
-            cmd.insert(-1, "libmp3lame")
-            cmd.insert(-1, "-b:a")
-            cmd.insert(-1, "192k")
+            cmd.extend([
+                "-codec:a", "libmp3lame",
+                "-b:a", "192k",
+                "-q:a", "2",  # Calidad alta pero rápida
+            ])
         elif output_format == "wav":
-            cmd.insert(-1, "-codec:a")
-            cmd.insert(-1, "pcm_s16le")
+            cmd.extend([
+                "-codec:a", "pcm_s16le",
+            ])
+        elif output_format == "aac":
+            cmd.extend([
+                "-codec:a", "aac",
+                "-b:a", "192k",
+            ])
+        elif output_format == "ogg":
+            cmd.extend([
+                "-codec:a", "libvorbis",
+                "-q:a", "5",  # Calidad buena
+            ])
+        elif output_format == "flac":
+            cmd.extend([
+                "-codec:a", "flac",
+                "-compression_level", "5",  # Balance velocidad/compresión
+            ])
+    else:
+        # Para video, optimizaciones adicionales
+        cmd.extend([
+            "-c:v", "libx264",  # Codec de video eficiente
+            "-preset", "fast",  # Preset rápido (balance entre velocidad y calidad)
+            "-crf", "23",  # Calidad constante (balance)
+            "-movflags", "+faststart",  # Optimización para streaming
+            "-c:a", "aac",  # Codec de audio para video
+            "-b:a", "128k",  # Bitrate de audio
+        ])
     
-    process = subprocess.run(
-        cmd,
-        capture_output=True,
-        text=True
-    )
+    cmd.append(str(output_path))
     
-    if process.returncode != 0:
-        raise Exception(f"FFmpeg error: {process.stderr}")
+    # Ejecutar FFmpeg de forma asíncrona con timeout
+    try:
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        
+        # Esperar con timeout (30 minutos máximo)
+        try:
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(),
+                timeout=1800.0  # 30 minutos
+            )
+        except asyncio.TimeoutError:
+            process.kill()
+            await process.wait()
+            raise Exception("La conversión excedió el tiempo máximo permitido (30 minutos)")
+        
+        if process.returncode != 0:
+            error_msg = stderr.decode('utf-8', errors='ignore') if stderr else "Error desconocido"
+            logger.error(f"FFmpeg error: {error_msg}")
+            raise Exception(f"FFmpeg error: {error_msg[:500]}")  # Limitar longitud del mensaje
+        
+    except FileNotFoundError:
+        raise Exception("FFmpeg no está instalado o no está en el PATH")
+    except Exception as e:
+        logger.error(f"Error en convert_media: {str(e)}\n{traceback.format_exc()}")
+        raise
 
 async def convert_image(input_path: Path, output_path: Path, output_format: str):
     """Convierte imágenes usando Pillow"""

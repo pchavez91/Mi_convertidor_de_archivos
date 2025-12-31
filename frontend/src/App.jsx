@@ -75,18 +75,39 @@ function App() {
     setError(null)
     setDownloadUrl(null)
 
+    let progressInterval = null
+
     try {
       const formData = new FormData()
       formData.append('file', file)
       formData.append('output_format', outputFormat)
 
-      // Simular progreso
-      const progressInterval = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 90) return prev
-          return prev + 10
-        })
-      }, 200)
+      // Determinar si es audio/video (conversiones más lentas)
+      const isMediaFile = fileType === 'audio' || fileType === 'video'
+      
+      // Simular progreso más realista
+      if (isMediaFile) {
+        // Para audio/video: progreso más lento y gradual
+        progressInterval = setInterval(() => {
+          setProgress(prev => {
+            // Llegar a 85% gradualmente, luego esperar respuesta real
+            if (prev < 85) {
+              return Math.min(prev + 0.5, 85) // Incremento más lento
+            }
+            return prev
+          })
+        }, 500) // Actualizar cada 500ms
+      } else {
+        // Para otros archivos: progreso más rápido
+        progressInterval = setInterval(() => {
+          setProgress(prev => {
+            if (prev < 90) {
+              return prev + 5
+            }
+            return prev
+          })
+        }, 200)
+      }
 
       const response = await axios.post(
         `${API_URL}/convert`,
@@ -95,14 +116,32 @@ function App() {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
+          timeout: 1800000, // 30 minutos de timeout (mismo que backend)
+          onUploadProgress: (progressEvent) => {
+            // Progreso de subida del archivo
+            if (progressEvent.total) {
+              const uploadProgress = Math.round((progressEvent.loaded * 20) / progressEvent.total) // 0-20%
+              setProgress(uploadProgress)
+            }
+          },
         }
       )
 
-      clearInterval(progressInterval)
+      if (progressInterval) {
+        clearInterval(progressInterval)
+      }
       setProgress(100)
       setDownloadUrl(`${API_URL}${response.data.download_url}`)
     } catch (err) {
-      setError(err.response?.data?.detail || 'Error al convertir el archivo')
+      if (progressInterval) {
+        clearInterval(progressInterval)
+      }
+      
+      if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+        setError('La conversión está tomando demasiado tiempo. Por favor intenta con un archivo más pequeño o verifica tu conexión.')
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Error al convertir el archivo')
+      }
       setProgress(0)
     } finally {
       setLoading(false)
@@ -194,7 +233,14 @@ function App() {
 
             {/* Progress */}
             {loading && (
-              <ConversionProgress progress={progress} />
+              <div>
+                <ConversionProgress progress={progress} />
+                {(fileType === 'audio' || fileType === 'video') && (
+                  <p className="text-sm text-gray-600 mt-2 text-center">
+                    ⏳ La conversión de {fileType === 'audio' ? 'audio' : 'video'} puede tardar varios minutos dependiendo del tamaño del archivo. Por favor espera...
+                  </p>
+                )}
+              </div>
             )}
 
             {/* Error */}
