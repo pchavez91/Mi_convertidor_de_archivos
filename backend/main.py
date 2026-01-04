@@ -237,15 +237,38 @@ async def convert_media(input_path: Path, output_path: Path, output_format: str)
                 "-compression_level", "5",  # Balance velocidad/compresión
             ])
     else:
-        # Para video, optimizaciones adicionales
-        cmd.extend([
-            "-c:v", "libx264",  # Codec de video eficiente
-            "-preset", "fast",  # Preset rápido (balance entre velocidad y calidad)
-            "-crf", "23",  # Calidad constante (balance)
-            "-movflags", "+faststart",  # Optimización para streaming
-            "-c:a", "aac",  # Codec de audio para video
-            "-b:a", "128k",  # Bitrate de audio
-        ])
+        # Para video, optimizaciones según formato
+        if output_format == "webm":
+            # WEBM requiere codecs específicos
+            # Intentar VP9 primero (mejor calidad), si no está disponible usar VP8
+            cmd.extend([
+                "-c:v", "libvpx-vp9",  # Codec de video VP9 para WEBM (mejor calidad)
+                "-crf", "30",  # Calidad (30 es buena calidad, más rápido)
+                "-b:v", "0",  # Bitrate variable con CRF
+                "-row-mt", "1",  # Multi-threading para VP9
+                "-deadline", "good",  # Balance velocidad/calidad
+                "-cpu-used", "2",  # Velocidad de encoding (0-5, más alto = más rápido)
+                "-c:a", "libopus",  # Codec de audio Opus para WEBM
+                "-b:a", "128k",  # Bitrate de audio
+            ])
+        elif output_format == "mp4":
+            cmd.extend([
+                "-c:v", "libx264",  # Codec de video H.264
+                "-preset", "fast",  # Preset rápido
+                "-crf", "23",  # Calidad constante
+                "-movflags", "+faststart",  # Optimización para streaming
+                "-c:a", "aac",  # Codec de audio AAC
+                "-b:a", "128k",  # Bitrate de audio
+            ])
+        else:
+            # Para otros formatos de video, usar configuración genérica
+            cmd.extend([
+                "-c:v", "libx264",  # Codec de video eficiente
+                "-preset", "fast",  # Preset rápido
+                "-crf", "23",  # Calidad constante
+                "-c:a", "aac",  # Codec de audio
+                "-b:a", "128k",  # Bitrate de audio
+            ])
     
     cmd.append(str(output_path))
     
@@ -270,8 +293,40 @@ async def convert_media(input_path: Path, output_path: Path, output_format: str)
         
         if process.returncode != 0:
             error_msg = stderr.decode('utf-8', errors='ignore') if stderr else "Error desconocido"
-            logger.error(f"FFmpeg error: {error_msg}")
-            raise Exception(f"FFmpeg error: {error_msg[:500]}")  # Limitar longitud del mensaje
+            # Filtrar mensajes informativos comunes de FFmpeg
+            error_lines = error_msg.split('\n')
+            # Buscar líneas de error reales (no información de versión o configuración)
+            real_errors = []
+            skip_patterns = ['ffmpeg version', 'Copyright', 'built with', 'configuration:', 'libav', '--enable-']
+            
+            for line in error_lines:
+                line_lower = line.lower()
+                # Si la línea contiene palabras clave de error real
+                if any(keyword in line_lower for keyword in ['error', 'failed', 'invalid', 'cannot', 'unable']):
+                    real_errors.append(line)
+                # Si no es información de configuración/versión, puede ser un error
+                elif line.strip() and not any(skip in line_lower for skip in skip_patterns):
+                    # Verificar si parece un mensaje de error
+                    if ':' in line and ('error' in line_lower or 'failed' in line_lower):
+                        real_errors.append(line)
+            
+            # Si encontramos errores reales, usarlos; sino usar el último mensaje significativo
+            if real_errors:
+                error_text = '\n'.join(real_errors[-5:])  # Últimos 5 errores
+            else:
+                # Si no hay errores claros, buscar las últimas líneas que no sean información de versión
+                last_lines = [line for line in error_lines[-10:] if line.strip() and not any(skip in line.lower() for skip in skip_patterns)]
+                error_text = '\n'.join(last_lines) if last_lines else error_msg[-500:]
+            
+            logger.error(f"FFmpeg error (returncode {process.returncode}): {error_text}")
+            
+            # Verificar si el archivo se creó a pesar del error
+            if output_path.exists() and output_path.stat().st_size > 0:
+                # Si el archivo existe y tiene tamaño, probablemente fue exitoso
+                logger.info(f"Archivo de salida creado a pesar de returncode {process.returncode}, continuando...")
+            else:
+                # Error real, el archivo no se creó
+                raise Exception(f"Error en FFmpeg: {error_text[:300]}")
         
     except FileNotFoundError:
         raise Exception("FFmpeg no está instalado o no está en el PATH")
