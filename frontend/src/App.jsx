@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import FileUploader from './components/FileUploader'
 import FormatSelector from './components/FormatSelector'
 import ConversionProgress from './components/ConversionProgress'
+import AdModal from './components/AdModal'
 import axios from 'axios'
 
 // Detectar la URL del API automáticamente
@@ -26,6 +27,7 @@ function App() {
   const [downloadUrl, setDownloadUrl] = useState(null)
   const [error, setError] = useState(null)
   const [apiInfo, setApiInfo] = useState(null)
+  const [showAdModal, setShowAdModal] = useState(false)
 
   // Obtener información del servidor al cargar
   useEffect(() => {
@@ -165,8 +167,19 @@ function App() {
 
   const handleDownload = () => {
     if (downloadUrl) {
-      window.open(downloadUrl, '_blank')
+      // Mostrar modal de publicidad antes de descargar
+      setShowAdModal(true)
     }
+  }
+
+  const handleContinueDownload = () => {
+    setShowAdModal(false)
+    // Pequeño delay para que el modal se cierre suavemente
+    setTimeout(() => {
+      if (downloadUrl) {
+        window.open(downloadUrl, '_blank')
+      }
+    }, 300)
   }
 
   return (
@@ -333,6 +346,13 @@ function App() {
           </div>
         </div>
       </div>
+
+      {/* Modal de Publicidad */}
+      <AdModal
+        isOpen={showAdModal}
+        onClose={() => setShowAdModal(false)}
+        onContinue={handleContinueDownload}
+      />
     </div>
   )
 }
