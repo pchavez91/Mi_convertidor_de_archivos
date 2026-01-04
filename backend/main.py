@@ -140,6 +140,18 @@ async def convert_file(
     if file_type == "unknown":
         raise HTTPException(status_code=400, detail="Formato de archivo no soportado")
     
+    # Validar que el formato de salida sea diferente al de entrada
+    input_ext = file.filename.split('.')[-1].lower()
+    # Normalizar extensiones (jpg = jpeg)
+    if input_ext == "jpeg":
+        input_ext = "jpg"
+    
+    if input_ext == output_format:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"El archivo ya está en formato {output_format.upper()}. Por favor elige un formato de salida diferente."
+        )
+    
     # Generar nombres únicos
     file_id = str(uuid.uuid4())
     input_path = UPLOAD_DIR / f"{file_id}_{file.filename}"
@@ -338,12 +350,6 @@ async def convert_image(input_path: Path, output_path: Path, output_format: str)
     """Convierte imágenes usando Pillow"""
     from PIL import Image
     
-    # SVG no se puede convertir desde imágenes raster
-    if output_format == "svg":
-        raise HTTPException(
-            status_code=400,
-            detail="No se puede convertir imágenes raster (JPG, PNG, etc.) a SVG. SVG es un formato vectorial. Para crear SVG, necesitas usar herramientas de diseño vectorial."
-        )
     
     try:
         img = Image.open(input_path)
