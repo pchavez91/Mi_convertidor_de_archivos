@@ -3,6 +3,8 @@ import FileUploader from './components/FileUploader'
 import FormatSelector from './components/FormatSelector'
 import ConversionProgress from './components/ConversionProgress'
 import AdModal from './components/AdModal'
+import Footer from './components/Footer'
+import DonationsPage from './components/DonationsPage'
 import axios from 'axios'
 
 // Detectar la URL del API automáticamente
@@ -28,6 +30,7 @@ function App() {
   const [error, setError] = useState(null)
   const [apiInfo, setApiInfo] = useState(null)
   const [showAdModal, setShowAdModal] = useState(false)
+  const [showDonationsPage, setShowDonationsPage] = useState(false)
 
   // Obtener información del servidor al cargar
   useEffect(() => {
@@ -187,10 +190,23 @@ function App() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <header className="text-center mb-10">
-          <div className="inline-block mb-4">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3 drop-shadow-sm">
-              Convertidor de Archivos
-            </h1>
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <div className="flex-1 hidden md:block"></div>
+            <div className="flex-1 text-center">
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3 drop-shadow-sm">
+                Convertidor de Archivos
+              </h1>
+            </div>
+            <div className="flex-1 flex justify-center md:justify-end">
+              <button
+                onClick={() => setShowDonationsPage(true)}
+                className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm font-semibold flex items-center space-x-2"
+                title="Apoya el proyecto con una donación"
+              >
+                <span>💝</span>
+                <span>Donaciones</span>
+              </button>
+            </div>
           </div>
           <p className="text-lg text-gray-700 max-w-2xl mx-auto font-medium">
             Convierte tus archivos de audio, video, imágenes y documentos de forma rápida y fácil
@@ -347,11 +363,20 @@ function App() {
         </div>
       </div>
 
+      {/* Footer */}
+      <Footer apiInfo={apiInfo} />
+
       {/* Modal de Publicidad */}
       <AdModal
         isOpen={showAdModal}
         onClose={() => setShowAdModal(false)}
         onContinue={handleContinueDownload}
+      />
+
+      {/* Página de Donaciones */}
+      <DonationsPage
+        isOpen={showDonationsPage}
+        onClose={() => setShowDonationsPage(false)}
       />
     </div>
   )
