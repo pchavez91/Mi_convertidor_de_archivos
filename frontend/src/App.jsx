@@ -10,16 +10,26 @@ import axios from 'axios'
 // Detectar la URL del API automáticamente
 const getApiUrl = () => {
   try {
+    // En producción (Vercel, Netlify, Fly.io), usar la variable de entorno
+    if (import.meta.env.VITE_API_URL) {
+      return import.meta.env.VITE_API_URL
+    }
+    
     if (typeof window === 'undefined') {
       return 'http://localhost:8000'
     }
+    
     // Si estamos en desarrollo, usar localhost
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       return 'http://localhost:8000'
     }
-    // Si estamos accediendo desde la red local, usar la misma IP pero puerto 8000
+    
+    // Si estamos en producción pero no hay VITE_API_URL configurada
+    // Intentar detectar automáticamente (no recomendado, mejor configurar VITE_API_URL)
     const hostname = window.location.hostname
-    return `http://${hostname}:8000`
+    // Si es un dominio de producción, no podemos adivinar el backend
+    // Mejor usar localhost como fallback y mostrar error
+    return 'http://localhost:8000'
   } catch (error) {
     // Fallback a localhost si hay algún error
     return 'http://localhost:8000'

@@ -19,8 +19,9 @@ app = FastAPI(title="Convertidor de Archivos API")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Configurar CORS para permitir acceso desde red local
-# Permite localhost y todas las IPs de la red local (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
+# Configurar CORS
+# En producción, permitir el dominio del frontend
+# En desarrollo, permitir localhost y red local
 cors_origins = [
     "http://localhost:5173",
     "http://localhost:3000",
@@ -28,7 +29,15 @@ cors_origins = [
     "http://127.0.0.1:3000",
 ]
 
-# Agregar IPs de red local comunes
+# Agregar dominio del frontend si está configurado (Fly.io, Vercel, Netlify, etc.)
+frontend_url = os.getenv("FRONTEND_URL", "")
+if frontend_url:
+    cors_origins.append(frontend_url)
+    # También agregar versión HTTPS si es HTTP
+    if frontend_url.startswith("http://"):
+        cors_origins.append(frontend_url.replace("http://", "https://"))
+
+# Agregar IPs de red local comunes (solo en desarrollo)
 try:
     hostname = socket.gethostname()
     local_ip = socket.gethostbyname(hostname)
@@ -47,20 +56,31 @@ try:
 except:
     pass
 
-# Permitir todos los orígenes para desarrollo en red local
+# Permitir todos los orígenes (ajustar en producción según necesidad)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permitir todos los orígenes para acceso desde red local
+    allow_origins=["*"],  # En producción, cambiar a lista específica de dominios
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Directorios para archivos temporales
-UPLOAD_DIR = Path("uploads")
-OUTPUT_DIR = Path("outputs")
-UPLOAD_DIR.mkdir(exist_ok=True)
-OUTPUT_DIR.mkdir(exist_ok=True)
+# Detectar si estamos en un contenedor (Fly.io, Docker) o desarrollo local
+if Path("/app").exists():
+    # En contenedor (Fly.io, Docker)
+    UPLOAD_DIR = Path("/app/backend/uploads")
+    OUTPUT_DIR = Path("/app/backend/outputs")
+elif Path("backend").exists() and not Path("/app").exists():
+    # Desarrollo local desde la raíz del proyecto
+    UPLOAD_DIR = Path("backend/uploads")
+    OUTPUT_DIR = Path("backend/outputs")
+else:
+    # Desarrollo local desde backend/
+    UPLOAD_DIR = Path("uploads")
+    OUTPUT_DIR = Path("outputs")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Formatos soportados
 AUDIO_FORMATS = ["mp3", "wav", "aac", "ogg", "flac", "m4a", "wma"]
@@ -107,11 +127,12 @@ def get_local_ip():
 @app.get("/")
 async def root():
     local_ip = get_local_ip()
+    port = int(os.getenv("PORT", 8000))
     return {
         "message": "Convertidor de Archivos API",
         "status": "running",
         "local_ip": local_ip,
-        "access_url": f"http://{local_ip}:8000"
+        "access_url": f"http://{local_ip}:{port}"
     }
 
 @app.get("/formats")
@@ -934,13 +955,15 @@ async def cleanup_file(filename: str):
 
 if __name__ == "__main__":
     import uvicorn
+    # Fly.io usa la variable de entorno PORT, si no existe usar 8000
+    port = int(os.getenv("PORT", 8000))
     local_ip = get_local_ip()
     print("\n" + "="*60)
     print("🚀 Convertidor de Archivos - Servidor iniciado")
     print("="*60)
-    print(f"📍 Acceso local:    http://localhost:8000")
-    print(f"🌐 Acceso en red:    http://{local_ip}:8000")
-    print(f"📚 Documentación:    http://localhost:8000/docs")
+    print(f"📍 Acceso local:    http://localhost:{port}")
+    print(f"🌐 Acceso en red:    http://{local_ip}:{port}")
+    print(f"📚 Documentación:    http://localhost:{port}/docs")
     print("="*60 + "\n")
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")
 
