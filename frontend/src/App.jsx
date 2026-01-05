@@ -24,19 +24,40 @@ const getApiUrl = () => {
       return 'http://localhost:8000'
     }
     
-    // Si estamos en producción pero no hay VITE_API_URL configurada
-    // Detectar automáticamente basado en el dominio
+    // Si estamos en producción (HTTPS), detectar automáticamente basado en el dominio
     const hostname = window.location.hostname
+    const protocol = window.location.protocol // 'https:' o 'http:'
     
-    // Si estamos en todoconvertir.com, el backend probablemente está en api.todoconvertir.com
+    // Si estamos en todoconvertir.com, el backend está en api.todoconvertir.com
     if (hostname === 'todoconvertir.com' || hostname === 'www.todoconvertir.com') {
+      // SIEMPRE usar HTTPS en producción
       return 'https://api.todoconvertir.com'
     }
     
-    // Fallback a localhost si no podemos detectar
+    // Si estamos en HTTPS pero no reconocemos el dominio, usar HTTPS por defecto
+    if (protocol === 'https:') {
+      // Intentar detectar el backend basado en el dominio actual
+      // Si el frontend está en un subdominio, el backend podría estar en 'api.'
+      const parts = hostname.split('.')
+      if (parts.length >= 2) {
+        const domain = parts.slice(-2).join('.') // Obtener dominio principal (ej: todoconvertir.com)
+        return `https://api.${domain}`
+      }
+      // Fallback: usar HTTPS con el dominio actual + /api
+      return `${protocol}//api.${hostname}`
+    }
+    
+    // Solo usar HTTP si estamos explícitamente en HTTP (desarrollo local)
     return 'http://localhost:8000'
   } catch (error) {
-    // Fallback a localhost si hay algún error
+    // En caso de error, si estamos en HTTPS, usar HTTPS
+    if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+      const hostname = window.location.hostname
+      if (hostname === 'todoconvertir.com' || hostname === 'www.todoconvertir.com') {
+        return 'https://api.todoconvertir.com'
+      }
+    }
+    // Fallback a localhost solo si estamos en desarrollo
     return 'http://localhost:8000'
   }
 }

@@ -6,9 +6,23 @@ Esta guía te ayudará a verificar que tu dominio `todoconvertir.com` esté conf
 
 ### 1. Backend en Fly.io
 
+#### ⚠️ IMPORTANTE: Ejecuta los comandos desde la raíz del proyecto
+
+Debes estar en el directorio raíz (donde está el `fly.toml`), NO en `backend/`:
+
+```bash
+# Asegúrate de estar en la raíz
+cd E:\Proyecto\Mi_convertidor_de_archivos
+```
+
 #### Verificar que el dominio esté agregado:
 ```bash
 fly certs list
+```
+
+O si estás en otro directorio, especifica el nombre de la app:
+```bash
+fly certs list -a convertidor-backend
 ```
 
 Deberías ver algo como:
@@ -19,16 +33,18 @@ api.todoconvertir.com       Issued
 
 #### Si no está agregado, agrégalo:
 ```bash
-# Para el dominio principal del backend (ej: api.todoconvertir.com)
+# Desde la raíz del proyecto
 fly certs add api.todoconvertir.com
 
-# O si el backend está en el dominio raíz
-fly certs add todoconvertir.com
+# O desde cualquier directorio, especificando la app
+fly certs add api.todoconvertir.com -a convertidor-backend
 ```
 
 #### Verificar el estado del certificado:
 ```bash
 fly certs show api.todoconvertir.com
+# O
+fly certs show api.todoconvertir.com -a convertidor-backend
 ```
 
 El estado debe ser **"Issued"** (emitido).

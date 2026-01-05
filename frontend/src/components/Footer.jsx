@@ -60,7 +60,7 @@ function Footer({ apiInfo }) {
             <ul className="space-y-3 text-sm">
               <li>
                 <a 
-                  href={`${apiInfo?.access_url || 'http://localhost:8000'}/docs`} 
+                  href={`${apiInfo?.access_url || (typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'https://api.todoconvertir.com' : 'http://localhost:8000')}/docs`} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-gray-300 hover:text-blue-400 transition-colors flex items-center"
