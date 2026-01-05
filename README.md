@@ -1,7 +1,11 @@
 # Convertidor de Archivos Online Gratis
 
+> 🚀 **Proyecto en Producción** - Esta aplicación está funcionando y disponible en [todoconvertir.com](https://todoconvertir.com)
+
 Aplicación web moderna y gratuita para convertir archivos de audio, video, imágenes y documentos. 
 Herramienta de conversión de formatos sin límites y sin almacenamiento de archivos.
+
+**Visita la aplicación en producción:** [https://todoconvertir.com](https://todoconvertir.com)
 
 ## Características
 
@@ -192,19 +196,81 @@ http://[IP_DEL_SERVIDOR]:5173
 
 ## Donaciones
 
-Este servicio es completamente gratuito. Si deseas apoyar el proyecto, puedes hacer una donación a través de:
+Este servicio es completamente gratuito y siempre lo será. Si te ha sido útil y quieres apoyar el desarrollo y mantenimiento del proyecto, puedes hacer una donación a través de:
 
 - 💳 PayPal
-- 💳 MercadoPago (CLP)
+- 💳 MercadoPago (pesos chilenos - CLP)
 - ₿ Criptomonedas
 
-Haz clic en el botón "Donaciones" en la parte superior de la página para más información.
+Las donaciones son completamente opcionales y ayudan a mantener el servicio funcionando. Puedes encontrar el botón de donaciones en la parte superior de la página.
 
 ## Contacto
 
 - **Email**: pchavez.dev@gmail.com
 - **GitHub**: [pchavez91](https://github.com/pchavez91)
 - **LinkedIn**: [Patricio Chávez](https://linkedin.com/in/patricio-chavez-005b83352)
+
+## Despliegue y Configuración
+
+Este proyecto está desplegado en producción usando:
+
+- **Frontend**: [Vercel](https://vercel.com) - `https://todoconvertir.com`
+- **Backend**: [Fly.io](https://fly.io) - `https://api.todoconvertir.com`
+
+### Configuración para Despliegue
+
+#### Backend (Fly.io)
+
+El backend está configurado con:
+- **Dockerfile**: Incluye FFmpeg y todas las dependencias necesarias
+- **fly.toml**: Configuración de la aplicación en Fly.io
+- **Certificado SSL**: Configurado para `api.todoconvertir.com`
+- **CORS**: Configurado para permitir peticiones desde `todoconvertir.com`
+
+Para desplegar el backend:
+```bash
+# Instalar Fly CLI
+# Windows: powershell -Command "iwr https://fly.io/install.ps1 -useb | iex"
+# macOS/Linux: curl -L https://fly.io/install.sh | sh
+
+# Iniciar sesión
+fly auth login
+
+# Crear la aplicación (si no existe)
+fly launch
+
+# Desplegar
+fly deploy
+```
+
+Ver [FLY_DEPLOY.md](FLY_DEPLOY.md) para instrucciones detalladas.
+
+#### Frontend (Vercel)
+
+El frontend está configurado con:
+- **Framework**: Vite + React
+- **Build Command**: `npm run build`
+- **Output Directory**: `dist`
+- **Environment Variable**: `VITE_API_URL=https://api.todoconvertir.com`
+
+Para desplegar el frontend:
+1. Conecta tu repositorio a Vercel
+2. Configura el proyecto:
+   - Root Directory: `frontend`
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+3. Agrega la variable de entorno `VITE_API_URL`
+4. Configura el dominio personalizado
+
+### Variables de Entorno
+
+**Backend (Fly.io):**
+```bash
+fly secrets set FRONTEND_URL=https://todoconvertir.com,https://www.todoconvertir.com
+```
+
+**Frontend (Vercel):**
+- `VITE_API_URL=https://api.todoconvertir.com`
 
 ## Tecnologías
 
@@ -255,10 +321,23 @@ Haz clic en el botón "Donaciones" en la parte superior de la página para más 
 
 Este proyecto es de propiedad privada. Todos los derechos reservados.
 
+## Sobre el Proyecto
+
+Este proyecto nació de la necesidad de tener una herramienta simple y gratuita para convertir archivos sin tener que instalar software adicional o preocuparse por límites de uso. La aplicación está diseñada para ser rápida, segura y respetuosa con la privacidad del usuario.
+
+**Características principales:**
+- Sin límites de uso
+- Sin registro requerido
+- Procesamiento seguro y privado
+- Interfaz intuitiva y moderna
+- Soporte para múltiples formatos
+
 ## Autor
 
 Desarrollado y mantenido por **Patricio Chávez**
 
-- Email: pchavez.dev@gmail.com
-- GitHub: [@pchavez91](https://github.com/pchavez91)
-- LinkedIn: [Patricio Chávez](https://linkedin.com/in/patricio-chavez-005b83352)
+Si tienes preguntas, sugerencias o encuentras algún problema, no dudes en contactarme:
+
+- 📧 Email: pchavez.dev@gmail.com
+- 💻 GitHub: [@pchavez91](https://github.com/pchavez91)
+- 💼 LinkedIn: [Patricio Chávez](https://linkedin.com/in/patricio-chavez-005b83352)
