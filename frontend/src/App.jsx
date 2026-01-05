@@ -2,20 +2,28 @@ import { useState, useCallback, useEffect } from 'react'
 import FileUploader from './components/FileUploader'
 import FormatSelector from './components/FormatSelector'
 import ConversionProgress from './components/ConversionProgress'
-import AdModal from './components/AdModal'
+import DownloadInfoModal from './components/DownloadInfoModal'
 import Footer from './components/Footer'
 import DonationsPage from './components/DonationsPage'
 import axios from 'axios'
 
 // Detectar la URL del API automáticamente
 const getApiUrl = () => {
-  // Si estamos en desarrollo, usar localhost
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+  try {
+    if (typeof window === 'undefined') {
+      return 'http://localhost:8000'
+    }
+    // Si estamos en desarrollo, usar localhost
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:8000'
+    }
+    // Si estamos accediendo desde la red local, usar la misma IP pero puerto 8000
+    const hostname = window.location.hostname
+    return `http://${hostname}:8000`
+  } catch (error) {
+    // Fallback a localhost si hay algún error
     return 'http://localhost:8000'
   }
-  // Si estamos accediendo desde la red local, usar la misma IP pero puerto 8000
-  const hostname = window.location.hostname
-  return `http://${hostname}:8000`
 }
 
 const API_URL = getApiUrl()
@@ -29,18 +37,35 @@ function App() {
   const [downloadUrl, setDownloadUrl] = useState(null)
   const [error, setError] = useState(null)
   const [apiInfo, setApiInfo] = useState(null)
-  const [showAdModal, setShowAdModal] = useState(false)
+  const [showDownloadModal, setShowDownloadModal] = useState(false)
   const [showDonationsPage, setShowDonationsPage] = useState(false)
 
   // Obtener información del servidor al cargar
   useEffect(() => {
-    axios.get(`${API_URL}/`)
-      .then(response => {
+    // Intentar obtener información del servidor, pero no fallar si no está disponible
+    const fetchApiInfo = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/`, {
+          timeout: 5000, // Timeout de 5 segundos
+          // Agregar headers para evitar bloqueos
+          headers: {
+            'Accept': 'application/json',
+          },
+        })
         setApiInfo(response.data)
-      })
-      .catch(() => {
-        // Silenciar errores de conexión
-      })
+      } catch (error) {
+        // Silenciar errores de conexión - el backend puede no estar disponible
+        // o puede ser bloqueado por el navegador
+        if (error.code !== 'ERR_BLOCKED_BY_CLIENT' && error.code !== 'ERR_NETWORK') {
+          console.log('Backend no disponible, continuando sin información del servidor')
+        }
+      }
+    }
+    
+    // Solo intentar si window está disponible (evitar errores en SSR)
+    if (typeof window !== 'undefined') {
+      fetchApiInfo()
+    }
   }, [])
 
   const handleFileSelect = useCallback((selectedFile) => {
@@ -170,17 +195,42 @@ function App() {
 
   const handleDownload = () => {
     if (downloadUrl) {
-      // Mostrar modal de publicidad antes de descargar
-      setShowAdModal(true)
+      // Modal de información desactivado temporalmente hasta que Google AdSense apruebe la página
+      // setShowDownloadModal(true)
+      
+      // Descarga directa por ahora
+      try {
+        // Intentar abrir en nueva pestaña
+        const newWindow = window.open(downloadUrl, '_blank')
+        // Si window.open fue bloqueado (por ejemplo, por Brave), usar location.href como fallback
+        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+          // Fallback: descargar en la misma ventana
+          window.location.href = downloadUrl
+        }
+      } catch (error) {
+        // Si hay un error, intentar descargar directamente
+        window.location.href = downloadUrl
+      }
     }
   }
 
   const handleContinueDownload = () => {
-    setShowAdModal(false)
+    setShowDownloadModal(false)
     // Pequeño delay para que el modal se cierre suavemente
     setTimeout(() => {
       if (downloadUrl) {
-        window.open(downloadUrl, '_blank')
+        try {
+          // Intentar abrir en nueva pestaña
+          const newWindow = window.open(downloadUrl, '_blank')
+          // Si window.open fue bloqueado, usar location.href como fallback
+          if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+            // Fallback: descargar en la misma ventana
+            window.location.href = downloadUrl
+          }
+        } catch (error) {
+          // Si hay un error, intentar descargar directamente
+          window.location.href = downloadUrl
+        }
       }
     }, 300)
   }
@@ -193,17 +243,17 @@ function App() {
           <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <div className="flex-1 hidden md:block"></div>
             <div className="flex-1 text-center">
-              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3 drop-shadow-sm">
-                Convertidor de Archivos
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3 drop-shadow-sm">
+                Convertidor de Archivos Online Gratis
               </h1>
             </div>
             <div className="flex-1 flex justify-center md:justify-end">
               <button
                 onClick={() => setShowDonationsPage(true)}
-                className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm font-semibold flex items-center space-x-2"
+                className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-5 py-2.5 md:px-6 md:py-3 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm md:text-base font-semibold flex items-center space-x-2"
                 title="Apoya el proyecto con una donación"
               >
-                <span>💝</span>
+                <span className="text-lg md:text-xl">💝</span>
                 <span>Donaciones</span>
               </button>
             </div>
@@ -366,10 +416,10 @@ function App() {
       {/* Footer */}
       <Footer apiInfo={apiInfo} />
 
-      {/* Modal de Publicidad */}
-      <AdModal
-        isOpen={showAdModal}
-        onClose={() => setShowAdModal(false)}
+      {/* Modal de Información de Descarga */}
+      <DownloadInfoModal
+        isOpen={showDownloadModal}
+        onClose={() => setShowDownloadModal(false)}
         onContinue={handleContinueDownload}
       />
 

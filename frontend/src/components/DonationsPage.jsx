@@ -81,7 +81,7 @@ function DonationsPage({ isOpen, onClose }) {
                   </div>
                   <div>
                     <h5 className="font-bold text-gray-800 text-lg">MercadoPago</h5>
-                    <p className="text-sm text-gray-600">Donación de $2,000 ARS</p>
+                    <p className="text-sm text-gray-600">Donación de $2,000 CLP</p>
                   </div>
                 </div>
                 <span className="text-blue-600 font-semibold">→</span>
@@ -102,7 +102,7 @@ function DonationsPage({ isOpen, onClose }) {
                   </div>
                   <div>
                     <h5 className="font-bold text-gray-800 text-lg">MercadoPago</h5>
-                    <p className="text-sm text-gray-600">Donación de $5,000 ARS</p>
+                    <p className="text-sm text-gray-600">Donación de $5,000 CLP</p>
                   </div>
                 </div>
                 <span className="text-green-600 font-semibold">→</span>

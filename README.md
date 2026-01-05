@@ -1,6 +1,7 @@
-# Convertidor de Archivos
+# Convertidor de Archivos Online Gratis
 
-Aplicación web moderna para convertir archivos de audio, video, imágenes y documentos.
+Aplicación web moderna y gratuita para convertir archivos de audio, video, imágenes y documentos. 
+Herramienta de conversión de formatos sin límites y sin almacenamiento de archivos.
 
 ## Características
 
@@ -10,6 +11,8 @@ Aplicación web moderna para convertir archivos de audio, video, imágenes y doc
 - 📄 Conversión de documentos: PDF, DOCX, TXT, HTML, MD
 - 🚀 Interfaz moderna y fácil de usar
 - ⚡ Conversión rápida y eficiente
+- 🔒 Privacidad garantizada: Los archivos se eliminan automáticamente después de la conversión
+- 💝 Gratis y sin límites
 
 ## Requisitos
 
@@ -58,6 +61,8 @@ cd frontend
 npm install
 ```
 
+**Nota:** El frontend utiliza React Router para la navegación. Las dependencias se instalan automáticamente con `npm install`.
+
 ## Uso
 
 ### Iniciar el backend
@@ -74,6 +79,12 @@ python3 main.py
 
 El servidor estará disponible en `http://localhost:8000`
 
+**Endpoints disponibles:**
+- `GET /` - Información del servidor y estado
+- `GET /docs` - Documentación interactiva de la API (Swagger UI)
+- `GET /formats` - Lista de formatos soportados
+- `POST /convert` - Convertir un archivo
+
 ### Iniciar el frontend
 
 ```bash
@@ -83,6 +94,15 @@ npm run dev
 
 La aplicación estará disponible en `http://localhost:5173`
 
+### Cómo usar la aplicación
+
+1. **Sube un archivo**: Arrastra y suelta un archivo o haz clic para seleccionarlo
+2. **Elige el formato de salida**: Selecciona el formato al que deseas convertir tu archivo
+3. **Convierte**: Haz clic en el botón "Convertir Archivo" y espera a que se complete la conversión
+4. **Descarga**: Una vez completada, descarga tu archivo convertido
+
+**Nota:** No puedes convertir un archivo al mismo formato (ej: MP3 a MP3). Debes elegir un formato diferente.
+
 ### Acceso desde Red Local
 
 La aplicación puede ser accedida desde otros dispositivos en tu red local. Ver [ACCESO_RED_LOCAL.md](ACCESO_RED_LOCAL.md) para más detalles.
@@ -91,6 +111,12 @@ Al iniciar el backend, verás la IP de red local en la consola. Usa esa IP desde
 ```
 http://[IP_DEL_SERVIDOR]:5173
 ```
+
+### Rutas de la Aplicación
+
+- `/` - Página principal (convertidor)
+- `/politica-privacidad` - Política de privacidad
+- `/terminos-condiciones` - Términos y condiciones
 
 ## Formatos Soportados
 
@@ -140,13 +166,99 @@ http://[IP_DEL_SERVIDOR]:5173
 - **RTF**: Rich Text Format
 - **ODT**: Formato OpenDocument Text
 
+## Privacidad y Seguridad
+
+- ✅ Los archivos se procesan temporalmente y se eliminan automáticamente
+- ✅ No almacenamos archivos permanentemente en el servidor
+- ✅ No recopilamos información personal de los usuarios
+- ✅ Conexiones seguras (HTTPS recomendado en producción)
+
+## Política de Privacidad y Términos
+
+- [Política de Privacidad](/politica-privacidad)
+- [Términos y Condiciones](/terminos-condiciones)
+
+## Compatibilidad
+
+### Navegadores Soportados
+
+- ✅ Chrome/Chromium (recomendado)
+- ✅ Firefox
+- ✅ Edge
+- ✅ Safari
+- ⚠️ Brave (puede requerir desactivar bloqueadores de anuncios para algunos recursos)
+
+**Nota:** Si experimentas problemas con Brave, verifica que los bloqueadores de anuncios no estén bloqueando recursos necesarios de la aplicación.
+
+## Donaciones
+
+Este servicio es completamente gratuito. Si deseas apoyar el proyecto, puedes hacer una donación a través de:
+
+- 💳 PayPal
+- 💳 MercadoPago (CLP)
+- ₿ Criptomonedas
+
+Haz clic en el botón "Donaciones" en la parte superior de la página para más información.
+
+## Contacto
+
+- **Email**: pchavez.dev@gmail.com
+- **GitHub**: [pchavez91](https://github.com/pchavez91)
+- **LinkedIn**: [Patricio Chávez](https://linkedin.com/in/patricio-chavez-005b83352)
+
 ## Tecnologías
 
-- **Frontend**: React + Vite + TailwindCSS
-- **Backend**: FastAPI + Python
-- **Conversión**: 
-  - FFmpeg (audio y video)
-  - Pillow (imágenes)
-  - python-docx (documentos Word)
-  - PyPDF2 (PDF)
-  - reportlab (generación de PDF)
+### Frontend
+- **React 18** - Biblioteca de UI
+- **Vite** - Build tool y dev server
+- **TailwindCSS** - Framework de CSS
+- **React Router v6** - Enrutamiento
+- **Axios** - Cliente HTTP
+
+### Backend
+- **FastAPI** - Framework web asíncrono
+- **Python 3.9+** - Lenguaje de programación
+- **Uvicorn** - Servidor ASGI
+- **aiofiles** - Operaciones de archivo asíncronas
+
+### Conversión
+- **FFmpeg** - Audio y video
+- **Pillow (PIL)** - Imágenes
+- **python-docx** - Documentos Word
+- **PyPDF2** - Extracción de texto de PDF
+- **reportlab** - Generación de PDF
+
+## Solución de Problemas
+
+### Error: "Formato de salida no especificado"
+- Asegúrate de seleccionar un formato de salida antes de convertir
+- Verifica que el formato seleccionado sea diferente al formato de entrada
+
+### Error: "El archivo ya está en formato X"
+- No puedes convertir un archivo al mismo formato
+- Selecciona un formato de salida diferente
+
+### Error: Conversión muy lenta
+- Las conversiones de audio/video pueden tardar varios minutos dependiendo del tamaño
+- Para archivos grandes, considera dividirlos en partes más pequeñas
+
+### Error: Archivo no soportado
+- Verifica que el formato del archivo esté en la lista de formatos soportados
+- Algunos formatos solo están disponibles para entrada o salida, no ambos
+
+### Problemas con Brave Browser
+- Si la página aparece en blanco, verifica la consola del navegador (F12)
+- Algunos bloqueadores pueden bloquear recursos necesarios
+- Intenta desactivar temporalmente los bloqueadores de anuncios
+
+## Licencia
+
+Este proyecto es de propiedad privada. Todos los derechos reservados.
+
+## Autor
+
+Desarrollado y mantenido por **Patricio Chávez**
+
+- Email: pchavez.dev@gmail.com
+- GitHub: [@pchavez91](https://github.com/pchavez91)
+- LinkedIn: [Patricio Chávez](https://linkedin.com/in/patricio-chavez-005b83352)
