@@ -32,10 +32,25 @@ cors_origins = [
 # Agregar dominio del frontend si está configurado (Fly.io, Vercel, Netlify, etc.)
 frontend_url = os.getenv("FRONTEND_URL", "")
 if frontend_url:
-    cors_origins.append(frontend_url)
-    # También agregar versión HTTPS si es HTTP
-    if frontend_url.startswith("http://"):
-        cors_origins.append(frontend_url.replace("http://", "https://"))
+    # Si hay múltiples URLs separadas por coma
+    urls = [url.strip() for url in frontend_url.split(",")]
+    for url in urls:
+        cors_origins.append(url)
+        # También agregar versión HTTPS si es HTTP
+        if url.startswith("http://"):
+            cors_origins.append(url.replace("http://", "https://"))
+        # También agregar versión HTTP si es HTTPS (para desarrollo)
+        elif url.startswith("https://"):
+            cors_origins.append(url.replace("https://", "http://"))
+
+# Agregar dominios conocidos de producción (hardcoded para seguridad adicional)
+production_domains = [
+    "https://todoconvertir.com",
+    "https://www.todoconvertir.com",
+    "http://todoconvertir.com",
+    "http://www.todoconvertir.com",
+]
+cors_origins.extend(production_domains)
 
 # Agregar IPs de red local comunes (solo en desarrollo)
 try:

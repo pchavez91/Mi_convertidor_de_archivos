@@ -25,24 +25,25 @@ fly auth login
 
 ### Paso 2: Crear la aplicación
 
-**Opción A: Usar fly.toml existente (Recomendado)**
+Ejecuta:
 ```bash
-fly launch --no-config
+fly launch --copy-config
 ```
 
-Esto usará el `fly.toml` que ya está configurado.
-
-**Opción B: Crear desde cero**
+O simplemente:
 ```bash
 fly launch
 ```
 
 Esto te pedirá:
-- Nombre de la app: `convertidor-backend` (o el que prefieras)
-- Región (elige la más cercana, ej: `iad` para Virginia, `sjc` para California)
-- ¿Copiar configuración de fly.toml? → Sí
-- ¿Crear Postgres? → No
-- ¿Crear Redis? → No
+- **Nombre de la app**: `convertidor-backend` (o el que prefieras, debe ser único)
+- **Región**: Elige la más cercana (ej: `iad` para Virginia, `sjc` para California)
+- **¿Copiar configuración de fly.toml?** → **Sí** (esto usará tu `fly.toml` existente)
+- **¿Crear Postgres?** → **No**
+- **¿Crear Redis?** → **No**
+- **¿Crear GitHub Actions workflow?** → Opcional (puedes decir No por ahora)
+
+**Nota**: El flag `--copy-config` le dice a Fly que use tu `fly.toml` existente sin modificarlo.
 
 ### Paso 3: Configurar variables de entorno (opcional)
 
@@ -54,11 +55,15 @@ fly secrets set FRONTEND_URL=https://tu-frontend.com
 
 ### Paso 4: Desplegar
 
+**IMPORTANTE**: Primero debes crear la aplicación con `fly launch` (Paso 2). Si ya la creaste, ahora despliega:
+
 ```bash
 fly deploy
 ```
 
 Esto construirá la imagen Docker, instalará FFmpeg y todas las dependencias, y desplegará tu aplicación.
+
+**Si obtienes el error "app not found"**: Significa que aún no has creado la aplicación. Ejecuta primero `fly launch` (Paso 2).
 
 ### Paso 5: Verificar el despliegue
 
@@ -68,6 +73,73 @@ fly logs
 ```
 
 Tu backend estará disponible en: `https://[tu-app].fly.dev`
+
+## Configurar Dominio Personalizado
+
+Si tienes un dominio propio y quieres usarlo en lugar de `[tu-app].fly.dev`:
+
+### Paso 1: Agregar el dominio a tu app
+
+```bash
+fly certs add tu-dominio.com
+```
+
+O si quieres usar un subdominio:
+
+```bash
+fly certs add api.tu-dominio.com
+```
+
+### Paso 2: Configurar registros DNS
+
+Fly.io te mostrará los registros DNS que debes agregar. Ejemplo:
+
+```
+Tipo: A
+Nombre: @ (o api si es subdominio)
+Valor: [IP que Fly.io te proporcionará]
+```
+
+O si prefieres usar CNAME:
+
+```
+Tipo: CNAME
+Nombre: @ (o api si es subdominio)
+Valor: [tu-app].fly.dev
+```
+
+**Nota**: Si usas CNAME, también necesitarás agregar un registro A para el dominio raíz (apex).
+
+### Paso 3: Verificar el certificado SSL
+
+Después de agregar los registros DNS, Fly.io generará automáticamente un certificado SSL gratuito. Verifica el estado:
+
+```bash
+fly certs show tu-dominio.com
+```
+
+El certificado puede tardar unos minutos en generarse. Una vez que esté listo, verás "Issued" en el estado.
+
+### Paso 4: Actualizar CORS (si es necesario)
+
+Si tu frontend también usará un dominio personalizado, actualiza la variable de entorno:
+
+```bash
+fly secrets set FRONTEND_URL=https://tu-frontend.com
+```
+
+### Comandos útiles para dominios
+
+```bash
+# Ver todos los certificados
+fly certs list
+
+# Ver detalles de un certificado
+fly certs show tu-dominio.com
+
+# Eliminar un certificado
+fly certs remove tu-dominio.com
+```
 
 ## Configuración del Frontend
 

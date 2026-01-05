@@ -25,10 +25,15 @@ const getApiUrl = () => {
     }
     
     // Si estamos en producción pero no hay VITE_API_URL configurada
-    // Intentar detectar automáticamente (no recomendado, mejor configurar VITE_API_URL)
+    // Detectar automáticamente basado en el dominio
     const hostname = window.location.hostname
-    // Si es un dominio de producción, no podemos adivinar el backend
-    // Mejor usar localhost como fallback y mostrar error
+    
+    // Si estamos en todoconvertir.com, el backend probablemente está en api.todoconvertir.com
+    if (hostname === 'todoconvertir.com' || hostname === 'www.todoconvertir.com') {
+      return 'https://api.todoconvertir.com'
+    }
+    
+    // Fallback a localhost si no podemos detectar
     return 'http://localhost:8000'
   } catch (error) {
     // Fallback a localhost si hay algún error
