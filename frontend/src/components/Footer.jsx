@@ -2,11 +2,10 @@ function Footer({ apiInfo }) {
   const currentYear = new Date().getFullYear()
   
   // Configuración del propietario
-  // Reemplaza estos datos con tus propios datos de contacto
   const ownerInfo = {
-    email: 'tu-email@ejemplo.com', // Reemplaza con tu email
-    github: 'https://github.com/tu-usuario', // Reemplaza con tu perfil de GitHub
-    linkedin: 'https://linkedin.com/in/tu-perfil', // Reemplaza con tu perfil de LinkedIn
+    email: 'pchavez.dev@gmail.com',
+    github: 'https://github.com/pchavez91', 
+    linkedin: 'https://linkedin.com/in/patricio-chavez-005b83352', 
   }
 
   return (
