@@ -403,34 +403,6 @@ function App() {
             </div>
           )}
 
-          {/* Quick Reference - Formatos */}
-          <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl shadow-xl p-6 border-2 border-gray-200">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 text-center">
-              Resumen de Formatos
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border-2 border-blue-200 text-center">
-                <span className="text-2xl block mb-2">🎵</span>
-                <h3 className="font-bold text-blue-800 text-sm mb-1">Audio</h3>
-                <p className="text-xs text-gray-600">MP3, WAV, AAC, OGG, FLAC</p>
-              </div>
-              <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border-2 border-purple-200 text-center">
-                <span className="text-2xl block mb-2">🎬</span>
-                <h3 className="font-bold text-purple-800 text-sm mb-1">Video</h3>
-                <p className="text-xs text-gray-600">MP4, AVI, MOV, WEBM, MKV</p>
-              </div>
-              <div className="p-4 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg border-2 border-pink-200 text-center">
-                <span className="text-2xl block mb-2">🖼️</span>
-                <h3 className="font-bold text-pink-800 text-sm mb-1">Imágenes</h3>
-                <p className="text-xs text-gray-600">JPG, PNG, WEBP, GIF, BMP</p>
-              </div>
-              <div className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border-2 border-green-200 text-center">
-                <span className="text-2xl block mb-2">📄</span>
-                <h3 className="font-bold text-green-800 text-sm mb-1">Documentos</h3>
-                <p className="text-xs text-gray-600">PDF, DOCX, TXT, HTML, MD</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 

@@ -8,6 +8,8 @@ function FormatCarousel() {
       type: 'audio',
       icon: '🎵',
       color: 'from-blue-500 to-cyan-500',
+      image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=400&fit=crop&q=80',
+      imageAlt: 'Auriculares y música',
       formats: [
         { name: 'MP3', desc: 'Más compatible', icon: '🎵' },
         { name: 'WAV', desc: 'Sin compresión', icon: '🎵' },
@@ -20,6 +22,8 @@ function FormatCarousel() {
       type: 'video',
       icon: '🎬',
       color: 'from-purple-500 to-pink-500',
+      image: 'https://images.unsplash.com/photo-1533750516457-a7f992034fec?w=800&h=400&fit=crop&q=80',
+      imageAlt: 'Cámara de video y producción',
       formats: [
         { name: 'MP4', desc: 'Más compatible', icon: '🎬' },
         { name: 'AVI', desc: 'Formato clásico', icon: '🎬' },
@@ -32,6 +36,8 @@ function FormatCarousel() {
       type: 'image',
       icon: '🖼️',
       color: 'from-pink-500 to-rose-500',
+      image: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=800&h=400&fit=crop&q=80',
+      imageAlt: 'Fotografía y edición de imágenes',
       formats: [
         { name: 'JPG', desc: 'Fotografías', icon: '🖼️' },
         { name: 'PNG', desc: 'Con transparencia', icon: '🖼️' },
@@ -44,6 +50,8 @@ function FormatCarousel() {
       type: 'document',
       icon: '📄',
       color: 'from-green-500 to-emerald-500',
+      image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&h=400&fit=crop&q=80',
+      imageAlt: 'Documentos y archivos',
       formats: [
         { name: 'PDF', desc: 'Documento portable', icon: '📄' },
         { name: 'DOCX', desc: 'Word', icon: '📄' },
@@ -83,24 +91,42 @@ function FormatCarousel() {
               key={category.type}
               className="min-w-full flex-shrink-0 px-4"
             >
-              <div className={`bg-gradient-to-br ${category.color} rounded-xl p-8 text-white shadow-lg`}>
-                <div className="text-center mb-6">
-                  <span className="text-6xl mb-4 block">{category.icon}</span>
-                  <h4 className="text-3xl font-bold capitalize mb-2">{category.type}</h4>
-                  <p className="text-white/90 text-lg">Formatos disponibles</p>
+              <div className={`bg-gradient-to-br ${category.color} rounded-xl overflow-hidden text-white shadow-lg relative`}>
+                {/* Imagen de fondo */}
+                <div className="absolute inset-0 opacity-20">
+                  <img
+                    src={category.image}
+                    alt={category.imageAlt}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
                 </div>
                 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {category.formats.map((format, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-white/20 backdrop-blur-sm rounded-lg p-4 text-center hover:bg-white/30 transition-all duration-300 transform hover:scale-105"
-                    >
-                      <span className="text-3xl block mb-2">{format.icon}</span>
-                      <div className="font-bold text-lg mb-1">{format.name}</div>
-                      <div className="text-sm text-white/80">{format.desc}</div>
+                {/* Overlay con gradiente */}
+                <div className="absolute inset-0 bg-gradient-to-br from-black/40 to-transparent"></div>
+                
+                {/* Contenido */}
+                <div className="relative p-8">
+                  <div className="text-center mb-6">
+                    <div className="inline-block bg-white/20 backdrop-blur-sm rounded-full p-4 mb-4">
+                      <span className="text-5xl block">{category.icon}</span>
                     </div>
-                  ))}
+                    <h4 className="text-3xl font-bold capitalize mb-2 drop-shadow-lg">{category.type}</h4>
+                    <p className="text-white/90 text-lg drop-shadow-md">Formatos disponibles</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {category.formats.map((format, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-white/20 backdrop-blur-md rounded-lg p-4 text-center hover:bg-white/30 transition-all duration-300 transform hover:scale-105 border border-white/30"
+                      >
+                        <span className="text-3xl block mb-2">{format.icon}</span>
+                        <div className="font-bold text-lg mb-1 drop-shadow-md">{format.name}</div>
+                        <div className="text-sm text-white/90 drop-shadow-sm">{format.desc}</div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
