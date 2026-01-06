@@ -5,6 +5,8 @@ import ConversionProgress from './components/ConversionProgress'
 import DownloadInfoModal from './components/DownloadInfoModal'
 import Footer from './components/Footer'
 import DonationsPage from './components/DonationsPage'
+import TutorialGuide from './components/TutorialGuide'
+import FormatCarousel from './components/FormatCarousel'
 import axios from 'axios'
 
 // Detectar la URL del API automáticamente
@@ -287,6 +289,11 @@ function App() {
 
         {/* Main Content */}
         <div className="max-w-4xl mx-auto">
+          {/* Tutorial Guide */}
+          <TutorialGuide />
+
+          {/* Format Carousel */}
+          <FormatCarousel />
           {/* Step 1 - Upload Section */}
           <div className={`rounded-2xl shadow-2xl p-8 mb-6 transition-all duration-300 ${
             !file 
@@ -396,39 +403,31 @@ function App() {
             </div>
           )}
 
-          {/* Info Section */}
-          <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl shadow-2xl p-8 border-2 border-gray-200">
-            <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-              Formatos Soportados
+          {/* Quick Reference - Formatos */}
+          <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl shadow-xl p-6 border-2 border-gray-200">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 text-center">
+              Resumen de Formatos
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-              <div className="p-5 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border-2 border-blue-200 hover:shadow-lg transition-shadow">
-                <h3 className="font-bold text-blue-800 mb-3 text-lg flex items-center">
-                  <span className="text-2xl mr-2">🎵</span>
-                  Audio
-                </h3>
-                <p className="text-sm text-gray-700 font-medium">MP3, WAV, AAC, OGG, FLAC, M4A, WMA</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border-2 border-blue-200 text-center">
+                <span className="text-2xl block mb-2">🎵</span>
+                <h3 className="font-bold text-blue-800 text-sm mb-1">Audio</h3>
+                <p className="text-xs text-gray-600">MP3, WAV, AAC, OGG, FLAC</p>
               </div>
-              <div className="p-5 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border-2 border-purple-200 hover:shadow-lg transition-shadow">
-                <h3 className="font-bold text-purple-800 mb-3 text-lg flex items-center">
-                  <span className="text-2xl mr-2">🎬</span>
-                  Video
-                </h3>
-                <p className="text-sm text-gray-700 font-medium">MP4, AVI, MOV, MKV, WEBM, FLV, WMV</p>
+              <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border-2 border-purple-200 text-center">
+                <span className="text-2xl block mb-2">🎬</span>
+                <h3 className="font-bold text-purple-800 text-sm mb-1">Video</h3>
+                <p className="text-xs text-gray-600">MP4, AVI, MOV, WEBM, MKV</p>
               </div>
-              <div className="p-5 bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl border-2 border-pink-200 hover:shadow-lg transition-shadow">
-                <h3 className="font-bold text-pink-800 mb-3 text-lg flex items-center">
-                  <span className="text-2xl mr-2">🖼️</span>
-                  Imágenes
-                </h3>
-                <p className="text-sm text-gray-700 font-medium">JPG, PNG, WEBP, GIF, BMP, ICO, TIFF</p>
+              <div className="p-4 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg border-2 border-pink-200 text-center">
+                <span className="text-2xl block mb-2">🖼️</span>
+                <h3 className="font-bold text-pink-800 text-sm mb-1">Imágenes</h3>
+                <p className="text-xs text-gray-600">JPG, PNG, WEBP, GIF, BMP</p>
               </div>
-              <div className="p-5 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border-2 border-green-200 hover:shadow-lg transition-shadow">
-                <h3 className="font-bold text-green-800 mb-3 text-lg flex items-center">
-                  <span className="text-2xl mr-2">📄</span>
-                  Documentos
-                </h3>
-                <p className="text-sm text-gray-700 font-medium">PDF, DOCX, TXT, HTML, MD</p>
+              <div className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border-2 border-green-200 text-center">
+                <span className="text-2xl block mb-2">📄</span>
+                <h3 className="font-bold text-green-800 text-sm mb-1">Documentos</h3>
+                <p className="text-xs text-gray-600">PDF, DOCX, TXT, HTML, MD</p>
               </div>
             </div>
           </div>
