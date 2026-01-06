@@ -52,14 +52,11 @@ function FileUploader({ onFileSelect, file }) {
     
     const ext = filename.split('.').pop().toLowerCase()
     const audioFormats = ['mp3', 'wav', 'aac', 'ogg', 'flac', 'm4a', 'wma']
-    const videoFormats = ['mp4', 'avi', 'mov', 'mkv', 'webm', 'flv', 'wmv', 'm4v']
     const imageFormats = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'ico', 'tiff']
     const documentFormats = ['pdf', 'docx', 'txt', 'html', 'md', 'rtf', 'odt']
     
     if (audioFormats.includes(ext)) {
       return '🎵'
-    } else if (videoFormats.includes(ext)) {
-      return '🎬'
     } else if (imageFormats.includes(ext)) {
       return '🖼️'
     } else if (documentFormats.includes(ext)) {

@@ -21,15 +21,15 @@ const getApiUrl = () => {
       return 'http://localhost:8000'
     }
     
-    // Si estamos en desarrollo, usar localhost
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    const hostname = window.location.hostname
+    const protocol = window.location.protocol // 'https:' o 'http:'
+    
+    // Si estamos en localhost o 127.0.0.1, usar localhost para el backend
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
       return 'http://localhost:8000'
     }
     
     // Si estamos en producción (HTTPS), detectar automáticamente basado en el dominio
-    const hostname = window.location.hostname
-    const protocol = window.location.protocol // 'https:' o 'http:'
-    
     // Si estamos en todoconvertir.com, el backend está en api.todoconvertir.com
     if (hostname === 'todoconvertir.com' || hostname === 'www.todoconvertir.com') {
       // SIEMPRE usar HTTPS en producción
@@ -49,7 +49,15 @@ const getApiUrl = () => {
       return `${protocol}//api.${hostname}`
     }
     
-    // Solo usar HTTP si estamos explícitamente en HTTP (desarrollo local)
+    // Si estamos accediendo desde una IP de red (ej: 192.168.100.150:5173)
+    // usar esa misma IP para el backend (ej: 192.168.100.150:8000)
+    // Esto es común cuando se accede desde otro dispositivo en la red local
+    if (hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+      // Es una IP, usar esa misma IP para el backend
+      return `http://${hostname}:8000`
+    }
+    
+    // Fallback: usar localhost
     return 'http://localhost:8000'
   } catch (error) {
     // En caso de error, si estamos en HTTPS, usar HTTPS
@@ -57,6 +65,13 @@ const getApiUrl = () => {
       const hostname = window.location.hostname
       if (hostname === 'todoconvertir.com' || hostname === 'www.todoconvertir.com') {
         return 'https://api.todoconvertir.com'
+      }
+    }
+    // Si estamos en una IP, usar esa IP
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname
+      if (hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+        return `http://${hostname}:8000`
       }
     }
     // Fallback a localhost solo si estamos en desarrollo
@@ -94,9 +109,7 @@ function App() {
       } catch (error) {
         // Silenciar errores de conexión - el backend puede no estar disponible
         // o puede ser bloqueado por el navegador
-        if (error.code !== 'ERR_BLOCKED_BY_CLIENT' && error.code !== 'ERR_NETWORK') {
-          console.log('Backend no disponible, continuando sin información del servidor')
-        }
+        // No mostrar mensajes en consola para no molestar al usuario
       }
     }
     
@@ -115,7 +128,6 @@ function App() {
     // Determinar tipo de archivo
     const ext = selectedFile?.name.split('.').pop().toLowerCase()
     const audioFormats = ['mp3', 'wav', 'aac', 'ogg', 'flac', 'm4a', 'wma']
-    const videoFormats = ['mp4', 'avi', 'mov', 'mkv', 'webm', 'flv', 'wmv', 'm4v']
     const imageFormats = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'ico', 'tiff']
     const documentFormats = ['pdf', 'docx', 'txt', 'html', 'md', 'rtf', 'odt']
     
@@ -126,8 +138,6 @@ function App() {
     
     if (audioFormats.includes(ext)) {
       setFileType('audio')
-    } else if (videoFormats.includes(ext)) {
-      setFileType('video')
     } else if (imageFormats.includes(ext)) {
       setFileType('image')
     } else if (documentFormats.includes(ext)) {
@@ -165,12 +175,12 @@ function App() {
       formData.append('file', file)
       formData.append('output_format', outputFormat)
 
-      // Determinar si es audio/video (conversiones más lentas)
-      const isMediaFile = fileType === 'audio' || fileType === 'video'
+      // Determinar si es audio (conversiones más lentas)
+      const isMediaFile = fileType === 'audio'
       
       // Simular progreso más realista
       if (isMediaFile) {
-        // Para audio/video: progreso más lento y gradual
+        // Para audio: progreso más lento y gradual
         progressInterval = setInterval(() => {
           setProgress(prev => {
             // Llegar a 85% gradualmente, luego esperar respuesta real
@@ -220,10 +230,32 @@ function App() {
         clearInterval(progressInterval)
       }
       
-      if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+      // Manejo específico de errores de red
+      if (err.code === 'ERR_BLOCKED_BY_CLIENT' || err.message.includes('ERR_BLOCKED_BY_CLIENT')) {
+        const errorMsg = `🚫 BLOQUEO DETECTADO: El navegador o una extensión está bloqueando las peticiones.\n\n` +
+          `El backend está corriendo, pero algo está bloqueando la conexión.\n\n` +
+          `Soluciones:\n` +
+          `1. Desactiva temporalmente las extensiones de bloqueo (uBlock, AdBlock, etc.)\n` +
+          `2. Agrega localhost:8000 a la lista blanca de tu bloqueador\n` +
+          `3. Prueba en modo incógnito sin extensiones\n` +
+          `4. Verifica la configuración de privacidad del navegador`
+        setError(errorMsg)
+      } else if (err.code === 'ERR_NETWORK' || err.code === 'ECONNREFUSED' || err.message.includes('Network Error') || err.message.includes('Failed to fetch')) {
+        const errorMsg = `Error de conexión: No se pudo conectar al servidor en ${API_URL}.\n\n` +
+          `Por favor verifica:\n` +
+          `1. Que el backend esté corriendo (ejecuta: cd backend && py main.py)\n` +
+          `2. Que el servidor esté escuchando en el puerto 8000\n` +
+          `3. Que no haya un firewall bloqueando la conexión\n` +
+          `4. Abre la consola del navegador (F12) para más detalles`
+        setError(errorMsg)
+      } else if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
         setError('La conversión está tomando demasiado tiempo. Por favor intenta con un archivo más pequeño o verifica tu conexión.')
+      } else if (err.response?.status === 400) {
+        setError(err.response?.data?.detail || 'Error en la solicitud. Verifica el formato del archivo.')
+      } else if (err.response?.status === 500) {
+        setError(err.response?.data?.detail || 'Error interno del servidor. Por favor intenta de nuevo.')
       } else {
-        setError(err.response?.data?.detail || err.message || 'Error al convertir el archivo')
+        setError(err.response?.data?.detail || err.message || `Error al convertir el archivo: ${err.message}`)
       }
       setProgress(0)
     } finally {
@@ -293,7 +325,6 @@ function App() {
           window.URL.revokeObjectURL(url)
         }, 100)
       } catch (error) {
-        console.error('Error al descargar:', error)
         // Fallback: intentar descargar directamente con window.location
         // Esto funciona mejor en algunos navegadores
         try {
@@ -308,7 +339,6 @@ function App() {
             document.body.removeChild(link)
           }, 100)
         } catch (fallbackError) {
-          console.error('Error en fallback:', fallbackError)
           setError('Error al descargar el archivo. Por favor, intenta nuevamente o convierte el archivo otra vez.')
           setDownloadUrl(null)
         }
@@ -340,7 +370,7 @@ function App() {
             </div>
           </div>
           <p className="text-lg text-gray-700 max-w-2xl mx-auto font-medium">
-            Convierte tus archivos de audio, video, imágenes y documentos de forma rápida y fácil
+            Convierte tus archivos de audio, imágenes y documentos de forma rápida y fácil
           </p>
         </header>
 
@@ -422,9 +452,9 @@ function App() {
               {loading && (
                 <div className="mt-6">
                   <ConversionProgress progress={progress} />
-                  {(fileType === 'audio' || fileType === 'video') && (
+                  {fileType === 'audio' && (
                     <p className="text-sm text-gray-700 mt-3 text-center font-medium">
-                      ⏳ La conversión de {fileType === 'audio' ? 'audio' : 'video'} puede tardar varios minutos dependiendo del tamaño del archivo. Por favor espera...
+                      ⏳ La conversión de audio puede tardar varios minutos dependiendo del tamaño del archivo. Por favor espera...
                     </p>
                   )}
                 </div>

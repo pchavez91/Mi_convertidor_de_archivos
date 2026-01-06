@@ -2,7 +2,7 @@
 
 > 🚀 **Proyecto en Producción** - Esta aplicación está funcionando y disponible en [todoconvertir.com](https://todoconvertir.com)
 
-Aplicación web moderna y gratuita para convertir archivos de audio, video, imágenes y documentos. 
+Aplicación web moderna y gratuita para convertir archivos de audio, imágenes y documentos. 
 Herramienta de conversión de formatos sin límites y sin almacenamiento de archivos.
 
 **Visita la aplicación en producción:** [https://todoconvertir.com](https://todoconvertir.com)
@@ -10,7 +10,6 @@ Herramienta de conversión de formatos sin límites y sin almacenamiento de arch
 ## Características
 
 - 🎵 Conversión de audio: MP3, WAV, AAC, OGG, FLAC, M4A, WMA
-- 🎬 Conversión de video: MP4, AVI, MOV, MKV, WEBM, FLV, WMV, M4V
 - 🖼️ Conversión de imágenes: JPG, PNG, WEBP, GIF, BMP, ICO, TIFF
 - 📄 Conversión de documentos: PDF, DOCX, TXT, HTML, MD
 - 🚀 Interfaz moderna y fácil de usar
@@ -23,7 +22,7 @@ Herramienta de conversión de formatos sin límites y sin almacenamiento de arch
 
 - Python 3.9+
 - Node.js 18+
-- FFmpeg (para conversión de audio/video)
+- FFmpeg (para conversión de audio)
 
 ## Instalación
 
@@ -109,7 +108,7 @@ La aplicación estará disponible en `http://localhost:5173`
 **Notas importantes:**
 - **Tamaño máximo**: 50 MB por archivo. Los archivos más grandes no pueden ser procesados.
 - No puedes convertir un archivo al mismo formato (ej: MP3 a MP3). Debes elegir un formato diferente.
-- Las conversiones de audio/video están optimizadas para velocidad, priorizando la rapidez sobre la máxima calidad.
+- Las conversiones de audio están optimizadas para velocidad, priorizando la rapidez sobre la máxima calidad.
 
 ### Acceso desde Red Local
 
@@ -138,18 +137,6 @@ http://[IP_DEL_SERVIDOR]:5173
 - **FLAC**: Sin pérdida de calidad, compresión lossless
 - **M4A**: Formato Apple, alta calidad
 - **WMA**: Formato Windows Media
-
-### Video
-**Entrada y Salida**: MP4, AVI, MOV, MKV, WEBM, FLV, WMV, M4V
-
-- **MP4**: Formato más compatible y estándar
-- **AVI**: Formato clásico de video
-- **MOV**: Formato Apple QuickTime
-- **MKV**: Contenedor flexible y versátil
-- **WEBM**: Optimizado para web, formato abierto
-- **FLV**: Formato Flash Video
-- **WMV**: Formato Windows Media Video
-- **M4V**: Formato Apple para video
 
 ### Imágenes
 **Entrada y Salida**: JPG/JPEG, PNG, WEBP, GIF, BMP, ICO, TIFF
@@ -307,7 +294,7 @@ fly secrets set FRONTEND_URL=https://todoconvertir.com,https://www.todoconvertir
 - **aiofiles** - Operaciones de archivo asíncronas
 
 ### Conversión
-- **FFmpeg** - Audio y video (optimizado para velocidad con presets rápidos)
+- **FFmpeg** - Audio (optimizado para velocidad con presets rápidos)
 - **Pillow (PIL)** - Imágenes
 - **python-docx** - Documentos Word
 - **PyPDF2** - Extracción de texto de PDF
@@ -321,12 +308,7 @@ El sistema está optimizado para priorizar la velocidad de conversión:
 - Presets rápidos de FFmpeg
 - Bitrates optimizados para velocidad
 - Compresión balanceada
-
-**Video:**
-- Preset `veryfast` de libx264 para MP4
-- CPU-used alto para VP9 (WEBM)
-- Bitrates de audio reducidos para mayor velocidad
-- Tune `fastdecode` para decodificación rápida
+- Perfiles de codec optimizados para procesamiento rápido
 
 Estas optimizaciones garantizan conversiones rápidas mientras mantienen una calidad aceptable.
 
@@ -341,7 +323,7 @@ Estas optimizaciones garantizan conversiones rápidas mientras mantienen una cal
 - Selecciona un formato de salida diferente
 
 ### Error: Conversión muy lenta
-- Las conversiones de audio/video pueden tardar varios minutos dependiendo del tamaño
+- Las conversiones de audio pueden tardar varios minutos dependiendo del tamaño
 - El sistema está optimizado para velocidad, pero archivos grandes (cerca de 50 MB) pueden tardar más
 - Para archivos grandes, considera dividirlos en partes más pequeñas
 

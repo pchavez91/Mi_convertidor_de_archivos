@@ -2,9 +2,7 @@ function FormatSelector({ fileType, value, onChange }) {
   const getFormatIcon = (format) => {
     const icons = {
       // Audio
-      mp3: '🎵', wav: '🎵', aac: '🎵', ogg: '🎵', flac: '🎵',
-      // Video
-      mp4: '🎬', avi: '🎬', mov: '🎬', webm: '🎬', mkv: '🎬',
+      mp3: '🎵', wav: '🎵', aac: '🎵', ogg: '🎵', flac: '🎵', m4a: '🎵', wma: '🎵',
       // Image
       jpg: '🖼️', png: '🖼️', webp: '🖼️', gif: '🖼️', bmp: '🖼️', ico: '🖼️', tiff: '🖼️',
       // Document
@@ -20,13 +18,8 @@ function FormatSelector({ fileType, value, onChange }) {
       { value: 'aac', label: 'AAC', desc: 'Alta calidad' },
       { value: 'ogg', label: 'OGG', desc: 'Formato abierto' },
       { value: 'flac', label: 'FLAC', desc: 'Sin pérdida' },
-    ],
-    video: [
-      { value: 'mp4', label: 'MP4', desc: 'Más compatible' },
-      { value: 'avi', label: 'AVI', desc: 'Formato clásico' },
-      { value: 'mov', label: 'MOV', desc: 'Formato Apple' },
-      { value: 'webm', label: 'WEBM', desc: 'Optimizado web' },
-      { value: 'mkv', label: 'MKV', desc: 'Contenedor flexible' },
+      { value: 'm4a', label: 'M4A', desc: 'Formato Apple' },
+      { value: 'wma', label: 'WMA', desc: 'Windows Media' },
     ],
     image: [
       { value: 'jpg', label: 'JPG', desc: 'Fotografías' },

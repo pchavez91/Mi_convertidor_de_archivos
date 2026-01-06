@@ -99,7 +99,6 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Formatos soportados
 AUDIO_FORMATS = ["mp3", "wav", "aac", "ogg", "flac", "m4a", "wma"]
-VIDEO_FORMATS = ["mp4", "avi", "mov", "mkv", "webm", "flv", "wmv", "m4v"]
 IMAGE_FORMATS = ["jpg", "jpeg", "png", "webp", "gif", "bmp", "ico", "tiff"]
 DOCUMENT_FORMATS = ["pdf", "docx", "txt", "html", "md", "rtf", "odt"]
 
@@ -108,8 +107,6 @@ def get_file_type(filename: str) -> str:
     ext = filename.split('.')[-1].lower()
     if ext in AUDIO_FORMATS:
         return "audio"
-    elif ext in VIDEO_FORMATS:
-        return "video"
     elif ext in IMAGE_FORMATS:
         return "image"
     elif ext in DOCUMENT_FORMATS:
@@ -155,7 +152,6 @@ async def get_formats():
     """Retorna los formatos soportados"""
     return {
         "audio": AUDIO_FORMATS,
-        "video": VIDEO_FORMATS,
         "image": IMAGE_FORMATS,
         "document": DOCUMENT_FORMATS
     }
@@ -217,11 +213,11 @@ async def convert_file(
             await f.write(content)
         
         # Realizar conversión según el tipo
-        if file_type in ["audio", "video"]:
+        if file_type == "audio":
             if not check_ffmpeg():
                 raise HTTPException(
                     status_code=500, 
-                    detail="FFmpeg no está instalado. Por favor instálalo para convertir audio/video."
+                    detail="FFmpeg no está instalado. Por favor instálalo para convertir audio."
                 )
             await convert_media(input_path, output_path, output_format)
         elif file_type == "image":
@@ -259,7 +255,7 @@ async def convert_file(
         raise HTTPException(status_code=500, detail=f"Error en la conversión: {str(e)}")
 
 async def convert_media(input_path: Path, output_path: Path, output_format: str):
-    """Convierte archivos de audio/video usando FFmpeg con optimizaciones"""
+    """Convierte archivos de audio usando FFmpeg con optimizaciones"""
     
     # Construir comando base con optimizaciones
     cmd = [
@@ -274,67 +270,43 @@ async def convert_media(input_path: Path, output_path: Path, output_format: str)
     ])
     
     # Ajustes específicos para audio (optimizados para velocidad)
-    if output_format in AUDIO_FORMATS:
-        if output_format == "mp3":
-            cmd.extend([
-                "-codec:a", "libmp3lame",
-                "-b:a", "192k",
-                "-q:a", "4",  # Calidad buena pero más rápida (0-9, más alto = más rápido)
-            ])
-        elif output_format == "wav":
-            cmd.extend([
-                "-codec:a", "pcm_s16le",
-            ])
-        elif output_format == "aac":
-            cmd.extend([
-                "-codec:a", "aac",
-                "-b:a", "192k",
-                "-profile:a", "aac_low",  # Perfil más rápido
-            ])
-        elif output_format == "ogg":
-            cmd.extend([
-                "-codec:a", "libvorbis",
-                "-q:a", "4",  # Calidad buena pero más rápida
-            ])
-        elif output_format == "flac":
-            cmd.extend([
-                "-codec:a", "flac",
-                "-compression_level", "3",  # Nivel más bajo = más rápido
-            ])
-    else:
-        # Para video, optimizaciones agresivas para velocidad
-        if output_format == "webm":
-            # WEBM con optimizaciones de velocidad
-            cmd.extend([
-                "-c:v", "libvpx-vp9",
-                "-crf", "32",  # Calidad ligeramente menor pero más rápido
-                "-b:v", "0",
-                "-row-mt", "1",
-                "-deadline", "realtime",  # Priorizar velocidad
-                "-cpu-used", "4",  # Más rápido (0-8, más alto = más rápido)
-                "-c:a", "libopus",
-                "-b:a", "96k",  # Bitrate de audio más bajo para velocidad
-            ])
-        elif output_format == "mp4":
-            cmd.extend([
-                "-c:v", "libx264",
-                "-preset", "veryfast",  # Preset más rápido que "fast"
-                "-crf", "24",  # Calidad ligeramente menor pero más rápido
-                "-tune", "fastdecode",  # Optimizar para decodificación rápida
-                "-movflags", "+faststart",
-                "-c:a", "aac",
-                "-b:a", "96k",  # Bitrate de audio más bajo
-            ])
-        else:
-            # Para otros formatos de video, usar configuración genérica optimizada
-            cmd.extend([
-                "-c:v", "libx264",
-                "-preset", "veryfast",  # Preset más rápido
-                "-crf", "24",
-                "-tune", "fastdecode",
-                "-c:a", "aac",
-                "-b:a", "96k",
-            ])
+    if output_format == "mp3":
+        cmd.extend([
+            "-codec:a", "libmp3lame",
+            "-b:a", "192k",
+            "-q:a", "4",  # Calidad buena pero más rápida (0-9, más alto = más rápido)
+        ])
+    elif output_format == "wav":
+        cmd.extend([
+            "-codec:a", "pcm_s16le",
+        ])
+    elif output_format == "aac":
+        cmd.extend([
+            "-codec:a", "aac",
+            "-b:a", "192k",
+            "-profile:a", "aac_low",  # Perfil más rápido
+        ])
+    elif output_format == "ogg":
+        cmd.extend([
+            "-codec:a", "libvorbis",
+            "-q:a", "4",  # Calidad buena pero más rápida
+        ])
+    elif output_format == "flac":
+        cmd.extend([
+            "-codec:a", "flac",
+            "-compression_level", "3",  # Nivel más bajo = más rápido
+        ])
+    elif output_format == "m4a":
+        cmd.extend([
+            "-codec:a", "aac",
+            "-b:a", "192k",
+            "-profile:a", "aac_low",
+        ])
+    elif output_format == "wma":
+        cmd.extend([
+            "-codec:a", "wmav2",
+            "-b:a", "192k",
+        ])
     
     cmd.append(str(output_path))
     
@@ -984,17 +956,16 @@ async def download_file(filename: str):
             'aac': 'audio/aac',
             'ogg': 'audio/ogg',
             'flac': 'audio/flac',
-            'mp4': 'video/mp4',
-            'avi': 'video/x-msvideo',
-            'mov': 'video/quicktime',
-            'webm': 'video/webm',
-            'mkv': 'video/x-matroska',
+            'm4a': 'audio/mp4',
+            'wma': 'audio/x-ms-wma',
             'jpg': 'image/jpeg',
             'jpeg': 'image/jpeg',
             'png': 'image/png',
             'gif': 'image/gif',
             'webp': 'image/webp',
             'bmp': 'image/bmp',
+            'ico': 'image/x-icon',
+            'tiff': 'image/tiff',
             'pdf': 'application/pdf',
             'txt': 'text/plain',
             'html': 'text/html',

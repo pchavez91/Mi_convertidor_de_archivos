@@ -25,7 +25,7 @@ function LegalTerms() {
               <h2 className="text-2xl font-bold text-gray-800 mb-4">2. Descripción del Servicio</h2>
               <p className="text-gray-700 mb-4">
                 Convertidor de Archivos es una herramienta gratuita en línea que permite a los usuarios 
-                convertir archivos entre diferentes formatos de audio, video, imágenes y documentos.
+                convertir archivos entre diferentes formatos de audio, imágenes y documentos.
               </p>
               <ul className="list-disc pl-6 text-gray-700 space-y-2">
                 <li>El servicio se proporciona "tal cual" sin garantías</li>
