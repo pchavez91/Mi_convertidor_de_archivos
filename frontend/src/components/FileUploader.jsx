@@ -19,14 +19,31 @@ function FileUploader({ onFileSelect, file }) {
     
     const files = Array.from(e.dataTransfer.files)
     if (files.length > 0) {
-      onFileSelect(files[0])
+      const selectedFile = files[0]
+      const MAX_SIZE = 50 * 1024 * 1024 // 50 MB
+      
+      if (selectedFile.size > MAX_SIZE) {
+        alert(`El archivo es demasiado grande. Tamaño máximo permitido: 50 MB. Tu archivo: ${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB`)
+        return
+      }
+      
+      onFileSelect(selectedFile)
     }
   }, [onFileSelect])
 
   const handleFileInput = useCallback((e) => {
     const files = Array.from(e.target.files)
     if (files.length > 0) {
-      onFileSelect(files[0])
+      const selectedFile = files[0]
+      const MAX_SIZE = 50 * 1024 * 1024 // 50 MB
+      
+      if (selectedFile.size > MAX_SIZE) {
+        alert(`El archivo es demasiado grande. Tamaño máximo permitido: 50 MB. Tu archivo: ${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB`)
+        e.target.value = '' // Limpiar el input
+        return
+      }
+      
+      onFileSelect(selectedFile)
     }
   }, [onFileSelect])
 
@@ -121,7 +138,7 @@ function FileUploader({ onFileSelect, file }) {
           />
         </label>
         <p className="text-xs text-gray-400 mt-3">
-          Tamaño máximo: 100 MB
+          Tamaño máximo: 50 MB
         </p>
       </div>
     </div>

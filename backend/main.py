@@ -176,6 +176,23 @@ async def convert_file(
     if file_type == "unknown":
         raise HTTPException(status_code=400, detail="Formato de archivo no soportado")
     
+    # Validar tamaño máximo del archivo (50 MB)
+    MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB en bytes
+    file_size = 0
+    
+    # Leer el contenido del archivo y verificar tamaño
+    content = await file.read()
+    file_size = len(content)
+    
+    if file_size > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=400,
+            detail=f"El archivo es demasiado grande. Tamaño máximo permitido: 50 MB. Tu archivo: {file_size / (1024 * 1024):.2f} MB"
+        )
+    
+    if file_size == 0:
+        raise HTTPException(status_code=400, detail="El archivo está vacío")
+    
     # Validar que el formato de salida sea diferente al de entrada
     input_ext = file.filename.split('.')[-1].lower()
     # Normalizar extensiones (jpg = jpeg)
@@ -195,9 +212,8 @@ async def convert_file(
     output_path = OUTPUT_DIR / output_filename
     
     try:
-        # Guardar archivo subido
+        # Guardar archivo subido (ya tenemos el contenido en memoria)
         async with aiofiles.open(input_path, 'wb') as f:
-            content = await file.read()
             await f.write(content)
         
         # Realizar conversión según el tipo
@@ -252,18 +268,18 @@ async def convert_media(input_path: Path, output_path: Path, output_format: str)
         "-y",  # Sobrescribir archivo de salida
     ]
     
-    # Optimizaciones generales para velocidad
+    # Optimizaciones generales para velocidad (priorizar velocidad sobre calidad máxima)
     cmd.extend([
         "-threads", "0",  # Usar todos los cores disponibles
     ])
     
-    # Ajustes específicos para audio
+    # Ajustes específicos para audio (optimizados para velocidad)
     if output_format in AUDIO_FORMATS:
         if output_format == "mp3":
             cmd.extend([
                 "-codec:a", "libmp3lame",
                 "-b:a", "192k",
-                "-q:a", "2",  # Calidad alta pero rápida
+                "-q:a", "4",  # Calidad buena pero más rápida (0-9, más alto = más rápido)
             ])
         elif output_format == "wav":
             cmd.extend([
@@ -273,49 +289,51 @@ async def convert_media(input_path: Path, output_path: Path, output_format: str)
             cmd.extend([
                 "-codec:a", "aac",
                 "-b:a", "192k",
+                "-profile:a", "aac_low",  # Perfil más rápido
             ])
         elif output_format == "ogg":
             cmd.extend([
                 "-codec:a", "libvorbis",
-                "-q:a", "5",  # Calidad buena
+                "-q:a", "4",  # Calidad buena pero más rápida
             ])
         elif output_format == "flac":
             cmd.extend([
                 "-codec:a", "flac",
-                "-compression_level", "5",  # Balance velocidad/compresión
+                "-compression_level", "3",  # Nivel más bajo = más rápido
             ])
     else:
-        # Para video, optimizaciones según formato
+        # Para video, optimizaciones agresivas para velocidad
         if output_format == "webm":
-            # WEBM requiere codecs específicos
-            # Intentar VP9 primero (mejor calidad), si no está disponible usar VP8
+            # WEBM con optimizaciones de velocidad
             cmd.extend([
-                "-c:v", "libvpx-vp9",  # Codec de video VP9 para WEBM (mejor calidad)
-                "-crf", "30",  # Calidad (30 es buena calidad, más rápido)
-                "-b:v", "0",  # Bitrate variable con CRF
-                "-row-mt", "1",  # Multi-threading para VP9
-                "-deadline", "good",  # Balance velocidad/calidad
-                "-cpu-used", "2",  # Velocidad de encoding (0-5, más alto = más rápido)
-                "-c:a", "libopus",  # Codec de audio Opus para WEBM
-                "-b:a", "128k",  # Bitrate de audio
+                "-c:v", "libvpx-vp9",
+                "-crf", "32",  # Calidad ligeramente menor pero más rápido
+                "-b:v", "0",
+                "-row-mt", "1",
+                "-deadline", "realtime",  # Priorizar velocidad
+                "-cpu-used", "4",  # Más rápido (0-8, más alto = más rápido)
+                "-c:a", "libopus",
+                "-b:a", "96k",  # Bitrate de audio más bajo para velocidad
             ])
         elif output_format == "mp4":
             cmd.extend([
-                "-c:v", "libx264",  # Codec de video H.264
-                "-preset", "fast",  # Preset rápido
-                "-crf", "23",  # Calidad constante
-                "-movflags", "+faststart",  # Optimización para streaming
-                "-c:a", "aac",  # Codec de audio AAC
-                "-b:a", "128k",  # Bitrate de audio
+                "-c:v", "libx264",
+                "-preset", "veryfast",  # Preset más rápido que "fast"
+                "-crf", "24",  # Calidad ligeramente menor pero más rápido
+                "-tune", "fastdecode",  # Optimizar para decodificación rápida
+                "-movflags", "+faststart",
+                "-c:a", "aac",
+                "-b:a", "96k",  # Bitrate de audio más bajo
             ])
         else:
-            # Para otros formatos de video, usar configuración genérica
+            # Para otros formatos de video, usar configuración genérica optimizada
             cmd.extend([
-                "-c:v", "libx264",  # Codec de video eficiente
-                "-preset", "fast",  # Preset rápido
-                "-crf", "23",  # Calidad constante
-                "-c:a", "aac",  # Codec de audio
-                "-b:a", "128k",  # Bitrate de audio
+                "-c:v", "libx264",
+                "-preset", "veryfast",  # Preset más rápido
+                "-crf", "24",
+                "-tune", "fastdecode",
+                "-c:a", "aac",
+                "-b:a", "96k",
             ])
     
     cmd.append(str(output_path))

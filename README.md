@@ -14,9 +14,10 @@ Herramienta de conversión de formatos sin límites y sin almacenamiento de arch
 - 🖼️ Conversión de imágenes: JPG, PNG, WEBP, GIF, BMP, ICO, TIFF
 - 📄 Conversión de documentos: PDF, DOCX, TXT, HTML, MD
 - 🚀 Interfaz moderna y fácil de usar
-- ⚡ Conversión rápida y eficiente
+- ⚡ Conversión rápida y eficiente (optimizada para velocidad)
 - 🔒 Privacidad garantizada: Los archivos se eliminan automáticamente después de la conversión
 - 💝 Gratis y sin límites
+- 📏 Límite de tamaño: 50 MB por archivo (para garantizar velocidad y estabilidad)
 
 ## Requisitos
 
@@ -100,12 +101,15 @@ La aplicación estará disponible en `http://localhost:5173`
 
 ### Cómo usar la aplicación
 
-1. **Sube un archivo**: Arrastra y suelta un archivo o haz clic para seleccionarlo
+1. **Sube un archivo**: Arrastra y suelta un archivo o haz clic para seleccionarlo (máximo 50 MB)
 2. **Elige el formato de salida**: Selecciona el formato al que deseas convertir tu archivo
 3. **Convierte**: Haz clic en el botón "Convertir Archivo" y espera a que se complete la conversión
 4. **Descarga**: Una vez completada, descarga tu archivo convertido
 
-**Nota:** No puedes convertir un archivo al mismo formato (ej: MP3 a MP3). Debes elegir un formato diferente.
+**Notas importantes:**
+- **Tamaño máximo**: 50 MB por archivo. Los archivos más grandes no pueden ser procesados.
+- No puedes convertir un archivo al mismo formato (ej: MP3 a MP3). Debes elegir un formato diferente.
+- Las conversiones de audio/video están optimizadas para velocidad, priorizando la rapidez sobre la máxima calidad.
 
 ### Acceso desde Red Local
 
@@ -169,6 +173,21 @@ http://[IP_DEL_SERVIDOR]:5173
 - **MD**: Markdown, formato de texto ligero
 - **RTF**: Rich Text Format
 - **ODT**: Formato OpenDocument Text
+
+## Límites y Restricciones
+
+- **Tamaño máximo de archivo**: 50 MB por archivo
+- **Tiempo máximo de conversión**: 30 minutos por archivo
+- **Formatos**: Solo se pueden convertir archivos de los formatos soportados listados abajo
+
+**Nota sobre el límite de 50 MB:**
+Este límite se estableció para garantizar:
+- Velocidad de conversión óptima
+- Estabilidad del servidor
+- Mejor experiencia de usuario
+- Prevención de timeouts y errores
+
+Si necesitas convertir archivos más grandes, considera dividirlos en partes más pequeñas o usar herramientas locales.
 
 ## Privacidad y Seguridad
 
@@ -288,11 +307,28 @@ fly secrets set FRONTEND_URL=https://todoconvertir.com,https://www.todoconvertir
 - **aiofiles** - Operaciones de archivo asíncronas
 
 ### Conversión
-- **FFmpeg** - Audio y video
+- **FFmpeg** - Audio y video (optimizado para velocidad con presets rápidos)
 - **Pillow (PIL)** - Imágenes
 - **python-docx** - Documentos Word
 - **PyPDF2** - Extracción de texto de PDF
 - **reportlab** - Generación de PDF
+
+### Optimizaciones de Rendimiento
+
+El sistema está optimizado para priorizar la velocidad de conversión:
+
+**Audio:**
+- Presets rápidos de FFmpeg
+- Bitrates optimizados para velocidad
+- Compresión balanceada
+
+**Video:**
+- Preset `veryfast` de libx264 para MP4
+- CPU-used alto para VP9 (WEBM)
+- Bitrates de audio reducidos para mayor velocidad
+- Tune `fastdecode` para decodificación rápida
+
+Estas optimizaciones garantizan conversiones rápidas mientras mantienen una calidad aceptable.
 
 ## Solución de Problemas
 
@@ -306,7 +342,18 @@ fly secrets set FRONTEND_URL=https://todoconvertir.com,https://www.todoconvertir
 
 ### Error: Conversión muy lenta
 - Las conversiones de audio/video pueden tardar varios minutos dependiendo del tamaño
+- El sistema está optimizado para velocidad, pero archivos grandes (cerca de 50 MB) pueden tardar más
 - Para archivos grandes, considera dividirlos en partes más pequeñas
+
+### Error: Archivo demasiado grande
+- El tamaño máximo permitido es 50 MB por archivo
+- Si tu archivo excede este límite, divídelo en partes más pequeñas o comprímalo antes de convertir
+- El límite se estableció para garantizar velocidad y estabilidad del servicio
+
+### Error: Archivo no encontrado al descargar
+- Los archivos se eliminan automáticamente después de un tiempo
+- Si el archivo no está disponible, convierte el archivo nuevamente
+- El sistema está optimizado para mantener los archivos disponibles durante la descarga
 
 ### Error: Archivo no soportado
 - Verifica que el formato del archivo esté en la lista de formatos soportados

@@ -86,6 +86,7 @@ function TutorialGuide() {
               <div>
                 <h4 className="font-bold text-gray-800 mb-2">Consejos importantes:</h4>
                 <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+                  <li><strong>Tamaño máximo por archivo: 50 MB</strong> - Los archivos más grandes no pueden ser procesados</li>
                   <li>Los archivos grandes pueden tardar más tiempo en convertirse</li>
                   <li>No puedes convertir un archivo al mismo formato que ya tiene</li>
                   <li>Tus archivos se procesan de forma segura y se eliminan automáticamente</li>
