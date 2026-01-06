@@ -231,22 +231,8 @@ function App() {
 
   const handleDownload = () => {
     if (downloadUrl) {
-      // Modal de información desactivado temporalmente hasta que Google AdSense apruebe la página
-      // setShowDownloadModal(true)
-      
-      // Descarga directa por ahora
-      try {
-        // Intentar abrir en nueva pestaña
-        const newWindow = window.open(downloadUrl, '_blank')
-        // Si window.open fue bloqueado (por ejemplo, por Brave), usar location.href como fallback
-        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-          // Fallback: descargar en la misma ventana
-          window.location.href = downloadUrl
-        }
-      } catch (error) {
-        // Si hay un error, intentar descargar directamente
-        window.location.href = downloadUrl
-      }
+      // Mostrar modal de publicidad
+      setShowDownloadModal(true)
     }
   }
 

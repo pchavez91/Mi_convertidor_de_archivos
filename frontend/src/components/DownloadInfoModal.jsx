@@ -23,17 +23,33 @@ function DownloadInfoModal({ isOpen, onClose, onContinue }) {
     return () => clearInterval(interval)
   }, [isOpen])
 
+  // Inicializar AdSense cuando el modal se abre
   useEffect(() => {
-    if (countdown === 0 && isOpen) {
-      // Auto-cerrar después de 5 segundos
+    if (isOpen) {
+      // Esperar un momento para que el DOM se actualice
       const timer = setTimeout(() => {
-        onContinue()
-      }, 500)
+        try {
+          // Inicializar anuncios de AdSense
+          if (window.adsbygoogle) {
+            (window.adsbygoogle = window.adsbygoogle || []).push({})
+          }
+        } catch (error) {
+          console.log('Error al inicializar AdSense:', error)
+        }
+      }, 100)
+      
       return () => clearTimeout(timer)
     }
-  }, [countdown, isOpen, onContinue])
+  }, [isOpen])
 
   if (!isOpen) return null
+
+  const handleClose = () => {
+    if (countdown === 0) {
+      onClose()
+      onContinue()
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm animate-fadeIn">
@@ -42,8 +58,8 @@ function DownloadInfoModal({ isOpen, onClose, onContinue }) {
         <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-5 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <span className="text-2xl">💝</span>
-              <h3 className="text-white font-bold text-xl">Información</h3>
+              <span className="text-2xl">📢</span>
+              <h3 className="text-white font-bold text-xl">Publicidad</h3>
             </div>
             {countdown > 0 && (
               <div className="bg-white/30 backdrop-blur-sm text-white px-4 py-2 rounded-full text-base font-bold shadow-lg animate-pulse">
@@ -55,34 +71,21 @@ function DownloadInfoModal({ isOpen, onClose, onContinue }) {
 
         {/* Contenido del Modal */}
         <div className="p-8">
-          {/* Icono */}
-          <div className="flex justify-center mb-6">
-            <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full p-5 shadow-xl transform hover:scale-110 transition-transform">
-              <span className="text-6xl">📥</span>
-            </div>
+          {/* Área de Publicidad de AdSense */}
+          <div className="mb-6 min-h-[200px] flex items-center justify-center bg-gray-50 rounded-xl border-2 border-gray-200">
+            <ins
+              className="adsbygoogle"
+              style={{ display: 'block' }}
+              data-ad-client="ca-pub-9979099334728134"
+              data-ad-slot="1234567890"
+              data-ad-format="auto"
+              data-full-width-responsive="true"
+            ></ins>
           </div>
 
-          {/* Mensaje */}
-          <div className="text-center mb-6">
-            <h4 className="text-2xl font-bold text-gray-800 mb-3">
-              Gracias por usar nuestro servicio
-            </h4>
-            <p className="text-gray-600 mb-5 text-base">
-              Este servicio es gratuito y se mantiene gracias al apoyo de nuestros usuarios.
-            </p>
-            <div className="bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 rounded-xl p-5 border-2 border-blue-300 shadow-md">
-              <p className="text-base text-gray-800 font-semibold mb-2">
-                🎯 Tu archivo está listo para descargar
-              </p>
-              <p className="text-sm text-gray-600">
-                Puedes apoyar el proyecto con una donación si lo deseas
-              </p>
-            </div>
-          </div>
-
-          {/* Botón de Continuar (deshabilitado hasta que termine el countdown) */}
+          {/* Botón de Cerrar (deshabilitado hasta que termine el countdown) */}
           <button
-            onClick={onContinue}
+            onClick={handleClose}
             disabled={countdown > 0}
             className={`w-full py-3 px-6 rounded-xl font-bold text-white transition-all duration-200 ${
               countdown > 0
@@ -90,7 +93,7 @@ function DownloadInfoModal({ isOpen, onClose, onContinue }) {
                 : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105'
             }`}
           >
-            {countdown > 0 ? `Espera ${countdown} segundos...` : 'Continuar con la descarga'}
+            {countdown > 0 ? `Espera ${countdown} segundos...` : 'Cerrar y Descargar'}
           </button>
         </div>
       </div>
