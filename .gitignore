@@ -37,3 +37,7 @@ backend/uploads/
 backend/outputs/
 *.log
 
+# Environment variables
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
