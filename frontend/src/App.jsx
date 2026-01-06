@@ -238,22 +238,79 @@ function App() {
     }
   }
 
-  const handleContinueDownload = () => {
+  const handleContinueDownload = async () => {
     setShowDownloadModal(false)
+    
+    if (!downloadUrl) {
+      setError('No hay URL de descarga disponible. Por favor, convierte el archivo nuevamente.')
+      return
+    }
+
     // Pequeño delay para que el modal se cierre suavemente
-    setTimeout(() => {
-      if (downloadUrl) {
-        try {
-          // Intentar abrir en nueva pestaña
-          const newWindow = window.open(downloadUrl, '_blank')
-          // Si window.open fue bloqueado, usar location.href como fallback
-          if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-            // Fallback: descargar en la misma ventana
-            window.location.href = downloadUrl
+    setTimeout(async () => {
+      try {
+        // Intentar descargar directamente usando fetch + blob (más confiable que window.open)
+        // Esto evita problemas con popup blockers y es más robusto
+        const downloadResponse = await fetch(downloadUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+          },
+        })
+        
+        if (!downloadResponse.ok) {
+          if (downloadResponse.status === 404) {
+            setError('El archivo ya no está disponible. Por favor, convierte el archivo nuevamente.')
+            setDownloadUrl(null)
+            return
           }
-        } catch (error) {
-          // Si hay un error, intentar descargar directamente
-          window.location.href = downloadUrl
+          throw new Error(`Error al descargar: ${downloadResponse.status} ${downloadResponse.statusText}`)
+        }
+
+        const blob = await downloadResponse.blob()
+        
+        // Verificar que el blob no esté vacío
+        if (blob.size === 0) {
+          throw new Error('El archivo descargado está vacío')
+        }
+
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.style.display = 'none'
+        
+        // Extraer el nombre del archivo de la URL
+        const urlParts = downloadUrl.split('/')
+        const filename = urlParts[urlParts.length - 1] || 'archivo_convertido'
+        a.download = filename
+        
+        document.body.appendChild(a)
+        a.click()
+        
+        // Limpiar después de un pequeño delay
+        setTimeout(() => {
+          document.body.removeChild(a)
+          window.URL.revokeObjectURL(url)
+        }, 100)
+      } catch (error) {
+        console.error('Error al descargar:', error)
+        // Fallback: intentar descargar directamente con window.location
+        // Esto funciona mejor en algunos navegadores
+        try {
+          const link = document.createElement('a')
+          link.href = downloadUrl
+          link.download = downloadUrl.split('/').pop() || 'archivo_convertido'
+          link.target = '_blank'
+          link.style.display = 'none'
+          document.body.appendChild(link)
+          link.click()
+          setTimeout(() => {
+            document.body.removeChild(link)
+          }, 100)
+        } catch (fallbackError) {
+          console.error('Error en fallback:', fallbackError)
+          setError('Error al descargar el archivo. Por favor, intenta nuevamente o convierte el archivo otra vez.')
+          setDownloadUrl(null)
         }
       }
     }, 300)

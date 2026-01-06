@@ -947,12 +947,58 @@ async def download_file(filename: str):
     file_path = OUTPUT_DIR / filename
     
     if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Archivo no encontrado")
+        logger.warning(f"Intento de descargar archivo no encontrado: {filename}")
+        raise HTTPException(status_code=404, detail="Archivo no encontrado. El archivo puede haber expirado. Por favor, convierte el archivo nuevamente.")
+    
+    # Verificar que el archivo no esté vacío
+    if file_path.stat().st_size == 0:
+        logger.error(f"Archivo vacío detectado: {filename}")
+        raise HTTPException(status_code=500, detail="El archivo está vacío o corrupto")
+    
+    # Obtener el nombre original del archivo si es posible
+    # El filename tiene formato: {file_id}.{extension}
+    try:
+        # Intentar obtener el tipo MIME correcto
+        extension = filename.split('.')[-1].lower()
+        mime_types = {
+            'mp3': 'audio/mpeg',
+            'wav': 'audio/wav',
+            'aac': 'audio/aac',
+            'ogg': 'audio/ogg',
+            'flac': 'audio/flac',
+            'mp4': 'video/mp4',
+            'avi': 'video/x-msvideo',
+            'mov': 'video/quicktime',
+            'webm': 'video/webm',
+            'mkv': 'video/x-matroska',
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'png': 'image/png',
+            'gif': 'image/gif',
+            'webp': 'image/webp',
+            'bmp': 'image/bmp',
+            'pdf': 'application/pdf',
+            'txt': 'text/plain',
+            'html': 'text/html',
+            'md': 'text/markdown',
+            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        }
+        media_type = mime_types.get(extension, 'application/octet-stream')
+    except:
+        media_type = 'application/octet-stream'
+    
+    logger.info(f"Descargando archivo: {filename} (tamaño: {file_path.stat().st_size} bytes)")
     
     return FileResponse(
         file_path,
-        media_type="application/octet-stream",
-        filename=filename
+        media_type=media_type,
+        filename=filename,
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
+        }
     )
 
 @app.delete("/cleanup/{filename}")
