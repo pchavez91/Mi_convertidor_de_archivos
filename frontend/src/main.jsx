@@ -4,11 +4,11 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import App from './App.jsx'
 import LegalPrivacy from './pages/LegalPrivacy.jsx'
 import LegalTerms from './pages/LegalTerms.jsx'
-import { initGTM } from './utils/gtm'
+import { initGoogleAnalytics } from './utils/analytics'
 import './index.css'
 
-// Inicializar Google Tag Manager
-initGTM()
+// Inicializar Google Analytics
+initGoogleAnalytics()
 
 const rootElement = document.getElementById('root')
 
