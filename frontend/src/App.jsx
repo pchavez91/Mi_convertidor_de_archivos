@@ -91,7 +91,9 @@ function App() {
   const [error, setError] = useState(null)
   const [apiInfo, setApiInfo] = useState(null)
   const [showDownloadModal, setShowDownloadModal] = useState(false)
+  const [showConversionModal, setShowConversionModal] = useState(false)
   const [showDonationsPage, setShowDonationsPage] = useState(false)
+  const [pendingConversion, setPendingConversion] = useState(null)
 
   // Obtener información del servidor al cargar
   useEffect(() => {
@@ -163,6 +165,20 @@ function App() {
       return
     }
 
+    // Mostrar modal de publicidad antes de convertir
+    setShowConversionModal(true)
+    setError(null)
+    setDownloadUrl(null)
+    
+    // Guardar los datos de la conversión para ejecutarla después del modal
+    setPendingConversion({ file, outputFormat })
+  }
+
+  const startConversion = async () => {
+    if (!pendingConversion) return
+
+    const { file, outputFormat } = pendingConversion
+    
     setLoading(true)
     setProgress(0)
     setError(null)
@@ -225,6 +241,7 @@ function App() {
       }
       setProgress(100)
       setDownloadUrl(`${API_URL}${response.data.download_url}`)
+      setPendingConversion(null)
     } catch (err) {
       if (progressInterval) {
         clearInterval(progressInterval)
@@ -258,28 +275,28 @@ function App() {
         setError(err.response?.data?.detail || err.message || `Error al convertir el archivo: ${err.message}`)
       }
       setProgress(0)
+      setPendingConversion(null)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleDownload = () => {
-    if (downloadUrl) {
-      // Mostrar modal de publicidad
-      setShowDownloadModal(true)
-    }
+  const handleContinueConversion = () => {
+    setShowConversionModal(false)
+    // Iniciar la conversión después de cerrar el modal
+    setTimeout(() => {
+      startConversion()
+    }, 100)
   }
 
-  const handleContinueDownload = async () => {
-    setShowDownloadModal(false)
-    
+  const handleDownload = async () => {
     if (!downloadUrl) {
       setError('No hay URL de descarga disponible. Por favor, convierte el archivo nuevamente.')
       return
     }
 
-    // Pequeño delay para que el modal se cierre suavemente
-    setTimeout(async () => {
+    // Descargar directamente sin modal
+    try {
       try {
         // Intentar descargar directamente usando fetch + blob (más confiable que window.open)
         // Esto evita problemas con popup blockers y es más robusto
@@ -343,11 +360,14 @@ function App() {
           setDownloadUrl(null)
         }
       }
-    }, 300)
+    } catch (error) {
+      setError('Error al descargar el archivo. Por favor, intenta nuevamente o convierte el archivo otra vez.')
+      setDownloadUrl(null)
+    }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-slate-900">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <header className="text-center mb-10">
@@ -369,7 +389,7 @@ function App() {
               </button>
             </div>
           </div>
-          <p className="text-lg text-gray-700 max-w-2xl mx-auto font-medium">
+          <p className="text-lg text-gray-300 max-w-2xl mx-auto font-medium">
             Convierte tus archivos de audio, imágenes y documentos de forma rápida y fácil
           </p>
         </header>
@@ -384,19 +404,19 @@ function App() {
           {/* Step 1 - Upload Section */}
           <div className={`rounded-2xl shadow-2xl p-8 mb-6 transition-all duration-300 ${
             !file 
-              ? 'bg-gradient-to-br from-blue-100 to-cyan-100 border-4 border-blue-400 shadow-lg shadow-blue-300/50' 
-              : 'bg-white border-2 border-blue-200'
+              ? 'bg-gradient-to-br from-blue-900/50 to-cyan-900/50 border-4 border-blue-400 shadow-lg shadow-blue-500/50' 
+              : 'bg-gray-700 border-2 border-blue-400'
           }`}>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+            <h2 className="text-2xl font-bold text-gray-100 mb-4 flex items-center">
               <span className="bg-gradient-to-br from-blue-400 to-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-3 text-lg font-bold shadow-lg">1</span>
               Sube tu archivo
             </h2>
             <FileUploader onFileSelect={handleFileSelect} file={file} />
             {fileType === 'unknown' && file && (
-              <div className="mt-4 p-4 bg-gradient-to-br from-red-50 to-pink-50 rounded-xl border-2 border-red-200">
+              <div className="mt-4 p-4 bg-gradient-to-br from-red-900/50 to-pink-900/50 rounded-xl border-2 border-red-500">
                 <div className="flex items-center space-x-2">
                   <span className="text-xl">⚠️</span>
-                  <p className="text-red-800 font-semibold">
+                  <p className="text-red-200 font-semibold">
                     Formato de archivo no soportado. Por favor selecciona un archivo válido.
                   </p>
                 </div>
@@ -408,10 +428,10 @@ function App() {
           {file && fileType !== 'unknown' && (
             <div className={`rounded-2xl shadow-2xl p-8 mb-6 transition-all duration-300 ${
               !outputFormat
-                ? 'bg-gradient-to-br from-purple-100 to-pink-100 border-4 border-purple-400 shadow-lg shadow-purple-300/50'
-                : 'bg-white border-2 border-purple-200'
+                ? 'bg-gradient-to-br from-purple-900/50 to-pink-900/50 border-4 border-purple-400 shadow-lg shadow-purple-500/50'
+                : 'bg-gray-700 border-2 border-purple-400'
             }`}>
-              <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+              <h2 className="text-2xl font-bold text-gray-100 mb-4 flex items-center">
                 <span className="bg-gradient-to-br from-purple-400 to-purple-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-3 text-lg font-bold shadow-lg">2</span>
                 Elige el formato de salida
               </h2>
@@ -425,8 +445,8 @@ function App() {
 
           {/* Step 3 - Convert Section */}
           {file && outputFormat && (
-            <div className="rounded-2xl shadow-2xl p-8 mb-6 bg-gradient-to-br from-green-100 to-emerald-100 border-4 border-green-400 shadow-lg shadow-green-300/50">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+            <div className="rounded-2xl shadow-2xl p-8 mb-6 bg-gradient-to-br from-green-900/50 to-emerald-900/50 border-4 border-green-400 shadow-lg shadow-green-500/50">
+              <h2 className="text-2xl font-bold text-gray-100 mb-4 flex items-center">
                 <span className="bg-gradient-to-br from-green-400 to-green-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-3 text-lg font-bold shadow-lg">3</span>
                 Convierte
               </h2>
@@ -453,7 +473,7 @@ function App() {
                 <div className="mt-6">
                   <ConversionProgress progress={progress} />
                   {fileType === 'audio' && (
-                    <p className="text-sm text-gray-700 mt-3 text-center font-medium">
+                    <p className="text-sm text-gray-300 mt-3 text-center font-medium">
                       ⏳ La conversión de audio puede tardar varios minutos dependiendo del tamaño del archivo. Por favor espera...
                     </p>
                   )}
@@ -462,20 +482,20 @@ function App() {
 
               {/* Error */}
               {error && (
-                <div className="mt-6 p-5 bg-gradient-to-br from-red-50 to-pink-50 rounded-xl border-2 border-red-300 shadow-lg">
+                <div className="mt-6 p-5 bg-gradient-to-br from-red-900/50 to-pink-900/50 rounded-xl border-2 border-red-500 shadow-lg">
                   <div className="flex items-start space-x-3">
                     <span className="text-2xl">❌</span>
-                    <p className="text-red-800 font-semibold flex-1">{error}</p>
+                    <p className="text-red-200 font-semibold flex-1">{error}</p>
                   </div>
                 </div>
               )}
 
               {/* Download */}
               {downloadUrl && (
-                <div className="mt-6 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-300 shadow-lg">
+                <div className="mt-6 p-6 bg-gradient-to-br from-green-900/50 to-emerald-900/50 rounded-xl border-2 border-green-500 shadow-lg">
                   <div className="flex items-center space-x-3 mb-4">
                     <span className="text-4xl">✅</span>
-                    <p className="text-green-800 font-bold text-lg">
+                    <p className="text-green-200 font-bold text-lg">
                       ¡Conversión completada exitosamente!
                     </p>
                   </div>
@@ -496,11 +516,11 @@ function App() {
       {/* Footer */}
       <Footer apiInfo={apiInfo} />
 
-      {/* Modal de Información de Descarga */}
+      {/* Modal de Publicidad antes de Convertir */}
       <DownloadInfoModal
-        isOpen={showDownloadModal}
-        onClose={() => setShowDownloadModal(false)}
-        onContinue={handleContinueDownload}
+        isOpen={showConversionModal}
+        onClose={() => setShowConversionModal(false)}
+        onContinue={handleContinueConversion}
       />
 
       {/* Página de Donaciones */}

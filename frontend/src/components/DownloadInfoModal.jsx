@@ -93,7 +93,7 @@ function DownloadInfoModal({ isOpen, onClose, onContinue }) {
                 : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105'
             }`}
           >
-            {countdown > 0 ? `Espera ${countdown} segundos...` : 'Cerrar y Descargar'}
+            {countdown > 0 ? `Espera ${countdown} segundos...` : 'Cerrar y Continuar'}
           </button>
         </div>
       </div>
