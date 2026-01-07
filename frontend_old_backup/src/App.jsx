@@ -7,6 +7,7 @@ import Footer from './components/Footer'
 import DonationsPage from './components/DonationsPage'
 import TutorialGuide from './components/TutorialGuide'
 import FormatCarousel from './components/FormatCarousel'
+import { SilkBackground } from './components/SilkBackground'
 import axios from 'axios'
 
 // Detectar la URL del API automáticamente
@@ -367,8 +368,15 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-slate-900">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen relative">
+      {/* Silk Background */}
+      <SilkBackground />
+      
+      {/* Gradient Overlay for better content visibility */}
+      <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
+      
+      {/* Content */}
+      <div className="relative z-20 container mx-auto px-4 py-8">
         {/* Header */}
         <header className="text-center mb-10">
           <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">

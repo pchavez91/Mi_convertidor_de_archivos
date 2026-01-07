@@ -1,6 +1,5 @@
 @echo off
-echo Iniciando servidor frontend...
+echo Iniciando servidor frontend (Next.js)...
 cd frontend
 npm run dev
 pause
-
