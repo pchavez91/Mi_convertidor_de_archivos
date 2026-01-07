@@ -6,10 +6,8 @@ function DownloadInfoModal({ isOpen, onClose, onContinue }) {
   useEffect(() => {
     if (!isOpen) return
 
-    // Resetear countdown cuando se abre
     setCountdown(5)
 
-    // Contador regresivo
     const interval = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -23,13 +21,10 @@ function DownloadInfoModal({ isOpen, onClose, onContinue }) {
     return () => clearInterval(interval)
   }, [isOpen])
 
-  // Inicializar AdSense cuando el modal se abre
   useEffect(() => {
     if (isOpen) {
-      // Esperar un momento para que el DOM se actualice
       const timer = setTimeout(() => {
         try {
-          // Inicializar anuncios de AdSense
           if (window.adsbygoogle) {
             (window.adsbygoogle = window.adsbygoogle || []).push({})
           }
@@ -52,27 +47,34 @@ function DownloadInfoModal({ isOpen, onClose, onContinue }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all animate-scaleIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md animate-fadeIn p-4">
+      <div className="backdrop-blur-md bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 rounded-2xl shadow-2xl max-w-md w-full transform transition-all animate-scaleIn border border-white/20">
         {/* Header del Modal */}
-        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-5 rounded-t-2xl">
+        <div className="bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-500 p-5 md:p-6 rounded-t-2xl">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <span className="text-2xl">📢</span>
-              <h3 className="text-white font-bold text-xl">Publicidad</h3>
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <svg className="w-6 h-6 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                </svg>
+              </div>
+              <h3 className="text-white font-bold text-lg md:text-xl">Publicidad</h3>
             </div>
             {countdown > 0 && (
-              <div className="bg-white/30 backdrop-blur-sm text-white px-4 py-2 rounded-full text-base font-bold shadow-lg animate-pulse">
-                {countdown}s
+              <div className="backdrop-blur-md bg-white/30 text-white px-4 py-2 rounded-full text-base md:text-lg font-bold shadow-lg animate-pulse flex items-center space-x-2">
+                <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{countdown}s</span>
               </div>
             )}
           </div>
         </div>
 
         {/* Contenido del Modal */}
-        <div className="p-8">
+        <div className="p-6 md:p-8">
           {/* Área de Publicidad de AdSense */}
-          <div className="mb-6 min-h-[200px] flex items-center justify-center bg-gray-50 rounded-xl border-2 border-gray-200">
+          <div className="mb-6 min-h-[200px] flex items-center justify-center backdrop-blur-sm bg-white/5 rounded-xl border-2 border-white/20">
             <ins
               className="adsbygoogle"
               style={{ display: 'block' }}
@@ -83,17 +85,31 @@ function DownloadInfoModal({ isOpen, onClose, onContinue }) {
             ></ins>
           </div>
 
-          {/* Botón de Cerrar (deshabilitado hasta que termine el countdown) */}
+          {/* Botón de Cerrar */}
           <button
             onClick={handleClose}
             disabled={countdown > 0}
-            className={`w-full py-3 px-6 rounded-xl font-bold text-white transition-all duration-200 ${
+            className={`group w-full py-3 md:py-4 px-6 rounded-xl font-bold text-white transition-all duration-300 flex items-center justify-center space-x-2 ${
               countdown > 0
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105'
+                ? 'bg-gray-600/50 cursor-not-allowed'
+                : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 shadow-xl hover:shadow-2xl transform hover:scale-105'
             }`}
           >
-            {countdown > 0 ? `Espera ${countdown} segundos...` : 'Cerrar y Continuar'}
+            {countdown > 0 ? (
+              <>
+                <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>Espera {countdown} segundos...</span>
+              </>
+            ) : (
+              <>
+                <span>Cerrar y Continuar</span>
+                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+              </>
+            )}
           </button>
         </div>
       </div>

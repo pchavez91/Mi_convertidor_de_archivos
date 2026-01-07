@@ -7,6 +7,7 @@ import Footer from './components/Footer'
 import DonationsPage from './components/DonationsPage'
 import TutorialGuide from './components/TutorialGuide'
 import FormatCarousel from './components/FormatCarousel'
+import AnimatedBackground from './components/AnimatedBackground'
 import axios from 'axios'
 
 // Detectar la URL del API automáticamente
@@ -367,55 +368,76 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-slate-900">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <header className="text-center mb-10">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Fondo animado */}
+      <AnimatedBackground />
+      
+      {/* Contenido principal con overlay */}
+      <div className="relative z-10">
+        <div className="container mx-auto px-4 py-8">
+          {/* Header */}
+          <header className="text-center mb-10">
           <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <div className="flex-1 hidden md:block"></div>
             <div className="flex-1 text-center">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3 drop-shadow-sm">
-                Convertidor de Archivos Online Gratis
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-shimmer mb-3 drop-shadow-2xl tracking-tight">
+                Convertidor de Archivos
+                <span className="block text-2xl md:text-3xl lg:text-4xl font-semibold mt-2 text-white/90">
+                  Online Gratis
+                </span>
               </h1>
             </div>
             <div className="flex-1 flex justify-center md:justify-end">
               <button
                 onClick={() => setShowDonationsPage(true)}
-                className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-5 py-2.5 md:px-6 md:py-3 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm md:text-base font-semibold flex items-center space-x-2"
+                className="group relative bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white px-6 py-3 md:px-8 md:py-4 rounded-xl hover:from-green-600 hover:via-emerald-600 hover:to-teal-600 transition-all duration-300 shadow-2xl hover:shadow-green-500/50 transform hover:scale-110 active:scale-95 text-sm md:text-base font-bold flex items-center space-x-3 overflow-hidden animate-pulse-glow"
                 title="Apoya el proyecto con una donación"
               >
-                <span className="text-lg md:text-xl">💝</span>
-                <span>Donaciones</span>
+                <span className="relative z-10 flex items-center space-x-2">
+                  <svg className="w-5 h-5 md:w-6 md:h-6 animate-float" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+                  </svg>
+                  <span className="relative">Donaciones</span>
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
               </button>
             </div>
           </div>
-          <p className="text-lg text-gray-300 max-w-2xl mx-auto font-medium">
-            Convierte tus archivos de audio, imágenes y documentos de forma rápida y fácil
+          <p className="text-lg md:text-xl text-gray-100 max-w-2xl mx-auto font-medium backdrop-blur-md bg-white/10 rounded-xl px-6 py-3 border border-white/20 shadow-lg">
+            Convierte tus archivos de <span className="font-semibold text-blue-300">audio</span>, <span className="font-semibold text-cyan-300">imágenes</span> y <span className="font-semibold text-green-300">documentos</span> de forma rápida y fácil
           </p>
         </header>
 
         {/* Main Content */}
         <div className="max-w-4xl mx-auto">
           {/* Tutorial Guide */}
-          <TutorialGuide />
+          <div className="backdrop-blur-sm bg-white/5 rounded-2xl p-6 mb-6 border border-white/10 shadow-2xl">
+            <TutorialGuide />
+          </div>
 
           {/* Format Carousel */}
-          <FormatCarousel />
+          <div className="backdrop-blur-sm bg-white/5 rounded-2xl p-6 mb-6 border border-white/10 shadow-2xl">
+            <FormatCarousel />
+          </div>
           {/* Step 1 - Upload Section */}
-          <div className={`rounded-2xl shadow-2xl p-8 mb-6 transition-all duration-300 ${
+          <div className={`rounded-xl md:rounded-2xl shadow-2xl p-4 md:p-8 mb-6 transition-all duration-300 backdrop-blur-md ${
             !file 
-              ? 'bg-gradient-to-br from-blue-900/50 to-cyan-900/50 border-4 border-blue-400 shadow-lg shadow-blue-500/50' 
-              : 'bg-gray-700 border-2 border-blue-400'
+              ? 'bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border-2 border-blue-400/50 shadow-lg shadow-blue-500/30'
+              : 'bg-white/10 border-2 border-blue-400/50'
           }`}>
-            <h2 className="text-2xl font-bold text-gray-100 mb-4 flex items-center">
-              <span className="bg-gradient-to-br from-blue-400 to-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-3 text-lg font-bold shadow-lg">1</span>
-              Sube tu archivo
+            <h2 className="text-xl md:text-3xl font-bold text-white mb-4 md:mb-6 flex items-center">
+              <span className="bg-gradient-to-br from-blue-400 to-blue-600 text-white rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center mr-3 md:mr-4 text-lg md:text-xl font-bold shadow-xl flex-shrink-0">1</span>
+              <span className="bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">Sube tu archivo</span>
             </h2>
             <FileUploader onFileSelect={handleFileSelect} file={file} />
             {fileType === 'unknown' && file && (
-              <div className="mt-4 p-4 bg-gradient-to-br from-red-900/50 to-pink-900/50 rounded-xl border-2 border-red-500">
-                <div className="flex items-center space-x-2">
-                  <span className="text-xl">⚠️</span>
+              <div className="mt-4 p-4 backdrop-blur-md bg-red-600/20 rounded-xl border-2 border-red-500/50">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-red-500/20 rounded-lg flex-shrink-0">
+                    <svg className="w-6 h-6 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
                   <p className="text-red-200 font-semibold">
                     Formato de archivo no soportado. Por favor selecciona un archivo válido.
                   </p>
@@ -426,14 +448,14 @@ function App() {
 
           {/* Step 2 - Format Selection Section */}
           {file && fileType !== 'unknown' && (
-            <div className={`rounded-2xl shadow-2xl p-8 mb-6 transition-all duration-300 ${
+            <div className={`rounded-xl md:rounded-2xl shadow-2xl p-4 md:p-8 mb-6 transition-all duration-300 backdrop-blur-md ${
               !outputFormat
-                ? 'bg-gradient-to-br from-purple-900/50 to-pink-900/50 border-4 border-purple-400 shadow-lg shadow-purple-500/50'
-                : 'bg-gray-700 border-2 border-purple-400'
+                ? 'bg-gradient-to-br from-indigo-600/20 to-blue-600/20 border-2 border-indigo-400/50 shadow-lg shadow-indigo-500/30'
+                : 'bg-white/10 border-2 border-indigo-400/50'
             }`}>
-              <h2 className="text-2xl font-bold text-gray-100 mb-4 flex items-center">
-                <span className="bg-gradient-to-br from-purple-400 to-purple-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-3 text-lg font-bold shadow-lg">2</span>
-                Elige el formato de salida
+              <h2 className="text-xl md:text-3xl font-bold text-white mb-4 md:mb-6 flex items-center">
+                <span className="bg-gradient-to-br from-indigo-400 to-indigo-600 text-white rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center mr-3 md:mr-4 text-lg md:text-xl font-bold shadow-xl flex-shrink-0">2</span>
+                <span className="bg-gradient-to-r from-indigo-300 to-blue-300 bg-clip-text text-transparent">Elige el formato de salida</span>
               </h2>
               <FormatSelector
                 fileType={fileType}
@@ -445,26 +467,32 @@ function App() {
 
           {/* Step 3 - Convert Section */}
           {file && outputFormat && (
-            <div className="rounded-2xl shadow-2xl p-8 mb-6 bg-gradient-to-br from-green-900/50 to-emerald-900/50 border-4 border-green-400 shadow-lg shadow-green-500/50">
-              <h2 className="text-2xl font-bold text-gray-100 mb-4 flex items-center">
-                <span className="bg-gradient-to-br from-green-400 to-green-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-3 text-lg font-bold shadow-lg">3</span>
-                Convierte
+            <div className="rounded-xl md:rounded-2xl shadow-2xl p-4 md:p-8 mb-6 backdrop-blur-md bg-gradient-to-br from-green-600/20 to-emerald-600/20 border-2 border-green-400/50 shadow-lg shadow-green-500/30">
+              <h2 className="text-xl md:text-3xl font-bold text-white mb-4 md:mb-6 flex items-center">
+                <span className="bg-gradient-to-br from-green-400 to-green-600 text-white rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center mr-3 md:mr-4 text-lg md:text-xl font-bold shadow-xl flex-shrink-0">3</span>
+                <span className="bg-gradient-to-r from-green-300 to-emerald-300 bg-clip-text text-transparent">Convierte</span>
               </h2>
               <button
                 onClick={handleConvert}
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white font-bold py-4 px-6 rounded-xl hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-2xl transform hover:scale-[1.02] active:scale-[0.98] text-lg"
+                className="group relative w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white font-bold py-4 md:py-5 px-6 md:px-8 rounded-xl hover:from-blue-500 hover:via-indigo-500 hover:to-cyan-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl hover:shadow-indigo-500/50 transform hover:scale-[1.02] active:scale-[0.98] text-base md:text-lg overflow-hidden"
               >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                 {loading ? (
-                  <span className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <span className="relative z-10 flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 md:h-6 md:w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Convirtiendo...
+                    <span>Convirtiendo...</span>
                   </span>
                 ) : (
-                  '✨ Convertir Archivo'
+                  <span className="relative z-10 flex items-center justify-center space-x-2">
+                    <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>Convertir Archivo</span>
+                  </span>
                 )}
               </button>
               
@@ -473,18 +501,27 @@ function App() {
                 <div className="mt-6">
                   <ConversionProgress progress={progress} />
                   {fileType === 'audio' && (
-                    <p className="text-sm text-gray-300 mt-3 text-center font-medium">
-                      ⏳ La conversión de audio puede tardar varios minutos dependiendo del tamaño del archivo. Por favor espera...
-                    </p>
+                    <div className="flex items-center justify-center space-x-2 mt-4 p-3 backdrop-blur-md bg-blue-600/20 rounded-xl border border-blue-400/50">
+                      <svg className="w-5 h-5 text-blue-300 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p className="text-sm md:text-base text-blue-200 font-medium">
+                        La conversión de audio puede tardar varios minutos dependiendo del tamaño del archivo. Por favor espera...
+                      </p>
+                    </div>
                   )}
                 </div>
               )}
 
               {/* Error */}
               {error && (
-                <div className="mt-6 p-5 bg-gradient-to-br from-red-900/50 to-pink-900/50 rounded-xl border-2 border-red-500 shadow-lg">
+                <div className="mt-6 p-5 backdrop-blur-md bg-red-600/20 rounded-xl border-2 border-red-500/50 shadow-lg">
                   <div className="flex items-start space-x-3">
-                    <span className="text-2xl">❌</span>
+                    <div className="p-2 bg-red-500/20 rounded-lg flex-shrink-0">
+                      <svg className="w-6 h-6 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
                     <p className="text-red-200 font-semibold flex-1">{error}</p>
                   </div>
                 </div>
@@ -492,18 +529,26 @@ function App() {
 
               {/* Download */}
               {downloadUrl && (
-                <div className="mt-6 p-6 bg-gradient-to-br from-green-900/50 to-emerald-900/50 rounded-xl border-2 border-green-500 shadow-lg">
+                <div className="mt-6 p-6 backdrop-blur-md bg-green-600/20 rounded-xl border-2 border-green-500/50 shadow-lg">
                   <div className="flex items-center space-x-3 mb-4">
-                    <span className="text-4xl">✅</span>
-                    <p className="text-green-200 font-bold text-lg">
+                    <div className="p-3 bg-green-500/20 rounded-lg">
+                      <svg className="w-8 h-8 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <p className="text-green-200 font-bold text-base md:text-lg">
                       ¡Conversión completada exitosamente!
                     </p>
                   </div>
                   <button
                     onClick={handleDownload}
-                    className="bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold py-3 px-8 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+                    className="group relative bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold py-3 md:py-4 px-6 md:px-8 rounded-xl hover:from-green-400 hover:to-emerald-400 transition-all duration-300 shadow-2xl hover:shadow-green-500/50 transform hover:scale-110 active:scale-95 overflow-hidden flex items-center justify-center space-x-2 mx-auto"
                   >
-                    📥 Descargar Archivo
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                    <svg className="relative z-10 w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    <span className="relative z-10">Descargar Archivo</span>
                   </button>
                 </div>
               )}
@@ -511,10 +556,11 @@ function App() {
           )}
 
         </div>
+        </div>
+        
+        {/* Footer */}
+        <Footer apiInfo={apiInfo} />
       </div>
-
-      {/* Footer */}
-      <Footer apiInfo={apiInfo} />
 
       {/* Modal de Publicidad antes de Convertir */}
       <DownloadInfoModal
