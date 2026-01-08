@@ -167,12 +167,20 @@ function App() {
     }
 
     // Mostrar modal de publicidad antes de convertir
-    setShowConversionModal(true)
+    // DESACTIVADO TEMPORALMENTE - Para reactivar, descomentar las siguientes líneas:
+    // setShowConversionModal(true)
+    // setError(null)
+    // setDownloadUrl(null)
+    // setPendingConversion({ file, outputFormat })
+    
+    // Iniciar conversión directamente sin modal
     setError(null)
     setDownloadUrl(null)
-    
-    // Guardar los datos de la conversión para ejecutarla después del modal
     setPendingConversion({ file, outputFormat })
+    // Usar setTimeout para asegurar que el estado se actualice antes de iniciar la conversión
+    setTimeout(() => {
+      startConversion()
+    }, 100)
   }
 
   const startConversion = async () => {
@@ -563,11 +571,13 @@ function App() {
       </div>
 
       {/* Modal de Publicidad antes de Convertir */}
-      <DownloadInfoModal
+      {/* Modal de publicidad - DESACTIVADO TEMPORALMENTE */}
+      {/* Para reactivar, descomentar las siguientes líneas: */}
+      {/* <DownloadInfoModal
         isOpen={showConversionModal}
         onClose={() => setShowConversionModal(false)}
         onContinue={handleContinueConversion}
-      />
+      /> */}
 
       {/* Página de Donaciones */}
       <DonationsPage
