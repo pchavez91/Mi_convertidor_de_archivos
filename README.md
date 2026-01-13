@@ -1,11 +1,9 @@
 # Convertidor de Archivos Online Gratis
 
-> 🚀 **Proyecto en Producción** - Esta aplicación está funcionando y disponible en [todoconvertir.com](https://todoconvertir.com)
+> 🚀Esta aplicación está funcionando y disponible en [todoconvertir.com](https://todoconvertir.com)
 
 Aplicación web moderna y gratuita para convertir archivos de audio, imágenes y documentos. 
 Herramienta de conversión de formatos sin límites y sin almacenamiento de archivos.
-
-**Visita la aplicación en producción:** [https://todoconvertir.com](https://todoconvertir.com)
 
 ## Características
 
@@ -363,7 +361,7 @@ Este proyecto nació de la necesidad de tener una herramienta simple y gratuita 
 
 ## Autor
 
-Desarrollado y mantenido por **Patricio Chávez**
+Desarrollado y mantenido por Patricio Chávez
 
 Si tienes preguntas, sugerencias o encuentras algún problema, no dudes en contactarme:
 
